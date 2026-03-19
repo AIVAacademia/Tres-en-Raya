@@ -64,45 +64,41 @@
       <input type="text" id="nombreJugador" placeholder="Ingresa tu nombre" class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-400 text-white placeholder-white/50 text-center text-lg">
       <button onclick="iniciarJuego()" class="w-full py-3 bg-blue-500 hover:bg-blue-600 rounded-xl font-bold transition-transform transform hover:scale-105 shadow-lg">Iniciar Aventura</button>
       <div class="flex gap-2">
-        <button onclick="mostrarPantalla('pantalla-instrucciones')" class="flex-1 py-2 bg-white/20 hover:bg-white/30 rounded-xl font-semibold transition-colors">Instrucciones</button>
+        <button onclick="abrirInstrucciones()" class="flex-1 py-2 bg-white/20 hover:bg-white/30 rounded-xl font-semibold transition-colors">Instrucciones</button>
         <button onclick="mostrarPantalla('pantalla-perfil')" class="flex-1 py-2 bg-purple-500 hover:bg-purple-600 rounded-xl font-semibold transition-colors hidden" id="btnPerfilInicio">Mi Perfil</button>
       </div>
     </div>
-  </div>
-
-  <!-- ================= INSTRUCCIONES ================= -->
-  <div id="pantalla-instrucciones" class="glass-panel p-8 rounded-3xl max-w-md w-full mx-4 hidden slide-up relative">
-    <h2 class="text-2xl font-bold mb-4 text-center">Instrucciones</h2>
-    <ul class="list-disc list-inside space-y-2 text-sm opacity-90 mb-6">
-      <li>Juegas contra la Inteligencia Artificial de AIVA.</li>
-      <li>Para colocar una ficha, debes responder correctamente a una pregunta.</li>
-      <li>Tienes 60 segundos por pregunta. Puedes pedir +30s una vez por turno.</li>
-      <li>Si fallas, pierdes el turno y la pregunta se repetirá más adelante.</li>
-      <li>¡Avanza de nivel, descubre nuevos universos y obtén logros!</li>
-    </ul>
-    <button onclick="mostrarPantalla('pantalla-inicio')" class="w-full py-3 bg-white/20 hover:bg-white/30 rounded-xl font-bold transition-colors">Volver</button>
   </div>
 
   <!-- ================= TABLERO DE JUEGO ================= -->
   <div id="pantalla-juego" class="w-full max-w-lg mx-4 hidden fade-in flex flex-col items-center">
     
     <!-- Header Juego -->
-    <div class="w-full flex justify-between items-center mb-6 glass-panel px-6 py-3 rounded-2xl">
+    <div class="w-full flex justify-between items-center mb-6 glass-panel px-4 py-3 rounded-2xl">
       <div>
-        <h2 id="nivelActualTexto" class="text-xl font-bold text-yellow-300">Nivel 1</h2>
+        <h2 id="nivelActualTexto" class="text-xl font-bold text-yellow-300 leading-tight">Nivel 1</h2>
+        <p id="nombreUniversoTexto" class="text-[10px] text-blue-200 uppercase tracking-widest font-bold mb-1">Nebulosa Nova</p>
         <p id="jugadorActualTexto" class="text-sm opacity-80">Jugador</p>
       </div>
-      <div class="flex gap-2 items-center">
+      <div class="flex gap-1.5 items-center">
         <!-- Temporizador Global en el Tablero -->
-        <div class="flex items-center gap-1 text-xl font-mono font-bold bg-white/10 px-3 py-1 rounded-lg mr-2">
-          <svg id="iconoTiempoGlobal" class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg>
+        <div class="flex items-center gap-1 text-lg font-mono font-bold bg-white/10 px-2 py-1 rounded-lg mr-1">
+          <svg id="iconoTiempoGlobal" class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg>
           <span id="tiempoGlobal" class="text-yellow-400">120</span>s
         </div>
+        
+        <!-- Botones de Acción -->
+        <button onclick="toggleSonido()" id="btnSonido" class="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-green-300" title="Activar/Desactivar Sonido">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5 10v4a2 2 0 002 2h2.586l3.707 3.707a1 1 0 001.707-.707V5.707a1 1 0 00-1.707-.707L9.586 8H7a2 2 0 00-2 2z"></path></svg>
+        </button>
+        <button onclick="abrirInstrucciones()" class="p-2 bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors" title="Instrucciones">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </button>
         <button onclick="pausarJuego()" class="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors" title="Pausar">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         </button>
         <button onclick="mostrarPantalla('pantalla-perfil')" class="p-2 bg-purple-500 hover:bg-purple-600 rounded-lg transition-colors" title="Perfil">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
         </button>
       </div>
     </div>
@@ -120,7 +116,25 @@
     <button onclick="reiniciarPartida()" class="px-6 py-2 bg-red-500 hover:bg-red-600 rounded-xl font-bold transition-colors">Rendirse</button>
   </div>
 
-  <!-- ================= MODAL PREGUNTA ================= -->
+  <!-- ================= MODALES (SOBREPUESTOS) ================= -->
+  
+  <!-- Modal Instrucciones -->
+  <div id="modal-instrucciones" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[70] hidden opacity-0 transition-opacity duration-300">
+    <div class="glass-panel p-8 rounded-3xl max-w-md w-full transform scale-95 transition-transform duration-300 relative">
+      <h2 class="text-2xl font-bold mb-4 text-center">Instrucciones</h2>
+      <ul class="list-disc list-inside space-y-2 text-sm opacity-90 mb-6">
+        <li>Juegas contra la Inteligencia Artificial de AIVA.</li>
+        <li>Para colocar una ficha, debes responder correctamente a una pregunta.</li>
+        <li>El temporizador es global para todo el nivel (normalmente 120s).</li>
+        <li>Si <strong>empatas</strong>, el tiempo del siguiente juego se reduce (¡hasta 25s!). Gana para recuperarlo.</li>
+        <li>Si fallas una pregunta, pierdes el turno y AIVA jugará.</li>
+        <li>¡Avanza de nivel, descubre universos y obtén logros y puntos!</li>
+      </ul>
+      <button onclick="cerrarInstrucciones()" class="w-full py-3 bg-blue-500 hover:bg-blue-600 rounded-xl font-bold transition-colors shadow-lg">Entendido</button>
+    </div>
+  </div>
+
+  <!-- Modal Pregunta -->
   <div id="modal-pregunta" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 hidden opacity-0 transition-opacity duration-300">
     <div class="glass-panel p-6 rounded-3xl max-w-md w-full transform scale-95 transition-transform duration-300" id="modal-pregunta-content">
       <div class="flex justify-between items-center mb-4">
@@ -147,7 +161,7 @@
     </div>
   </div>
 
-  <!-- ================= MODAL PAUSA ================= -->
+  <!-- Modal Pausa -->
   <div id="modal-pausa" class="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-[60] hidden opacity-0 transition-opacity duration-300">
     <div class="glass-panel p-8 rounded-3xl text-center max-w-sm w-full transform scale-95 transition-transform duration-300">
       <h2 class="text-3xl font-bold mb-4 text-white">Juego Pausado</h2>
@@ -211,6 +225,77 @@
   </div>
 
   <script>
+    /* ================= SISTEMA DE AUDIO (WEB AUDIO API) ================= */
+    let audioCtx = null;
+    let sonidoActivado = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function toggleSonido() {
+      sonidoActivado = !sonidoActivado;
+      const btn = document.getElementById('btnSonido');
+      if (sonidoActivado) {
+        btn.classList.replace('text-red-400', 'text-green-300');
+        initAudio();
+        playSound('click');
+      } else {
+        btn.classList.replace('text-green-300', 'text-red-400');
+      }
+    }
+
+    function playTone(freq, type, duration, vol = 0.1) {
+      if (!sonidoActivado || !audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch(e) {}
+    }
+
+    function playSound(evento) {
+      if (!sonidoActivado) return;
+      switch(evento) {
+        case 'click': 
+          playTone(600, 'sine', 0.1); 
+          break;
+        case 'correct':
+          playTone(440, 'sine', 0.1);
+          setTimeout(() => playTone(660, 'sine', 0.2), 100);
+          break;
+        case 'wrong': 
+          playTone(150, 'sawtooth', 0.3, 0.2); 
+          break;
+        case 'win':
+          [440, 554, 659, 880].forEach((f, i) => {
+             setTimeout(() => playTone(f, 'sine', 0.2), i * 100);
+          });
+          break;
+        case 'lose':
+          [440, 392, 349, 330].forEach((f, i) => {
+             setTimeout(() => playTone(f, 'triangle', 0.3, 0.15), i * 150);
+          });
+          break;
+        case 'tie':
+          playTone(300, 'square', 0.2, 0.05);
+          setTimeout(() => playTone(300, 'square', 0.2, 0.05), 300);
+          break;
+      }
+    }
+
     /* ================= ESTADO DEL JUEGO ================= */
     let jugador = {
       nombre: '',
@@ -225,52 +310,100 @@
       tablero: Array(9).fill(null),
       turno: 'X', // 'X' es jugador, 'O' es máquina
       enJuego: false,
-      casillaSeleccionada: null
+      casillaSeleccionada: null,
+      rachaEmpates: 0
     };
 
     let timerInterval = null;
+    let tiempoBaseNivel = 120; // Tiempo que cambia si hay empates
     let tiempoRestante = 120;
     let tiempoExtraUsado = false;
-    let preguntasFalladas = [];
-    let preguntaActualObj = null;
 
-    /* ================= BANCO DE PREGUNTAS ================= */
+    /* ================= BANCO DE PREGUNTAS (100% MÁS) ================= */
     const bancoPreguntas = [
-      // Básicas (Niveles 1-19)
+      // BÁSICAS (14 Preguntas)
       { cat: "IA", texto: "¿Qué significa 'IA'?", opciones: ["Internet Avanzado", "Inteligencia Artificial", "Interfaz Activa", "Intercambio Anónimo"], correcta: 1 },
       { cat: "Windows", texto: "¿Cuál es el atajo de teclado para COPIAR en Windows?", opciones: ["Ctrl + C", "Ctrl + V", "Ctrl + X", "Ctrl + P"], correcta: 0 },
+      { cat: "Windows", texto: "¿Cuál es el atajo de teclado para PEGAR?", opciones: ["Ctrl + C", "Ctrl + V", "Ctrl + P", "Ctrl + X"], correcta: 1 },
+      { cat: "Windows", texto: "¿Cuál es el atajo de teclado para DESHACER una acción?", opciones: ["Ctrl + Z", "Ctrl + Y", "Ctrl + U", "Ctrl + D"], correcta: 0 },
       { cat: "Internet", texto: "¿Qué significa 'WWW'?", opciones: ["World Wide Web", "World Web Windows", "Wide Web World", "Windows World Web"], correcta: 0 },
+      { cat: "Internet", texto: "¿Qué símbolo se usa obligatoriamente en un correo electrónico?", opciones: ["#", "$", "@", "&"], correcta: 2 },
       { cat: "IA", texto: "¿Qué es ChatGPT?", opciones: ["Un antivirus", "Un modelo de lenguaje de IA", "Un sistema operativo", "Un navegador web"], correcta: 1 },
+      { cat: "IA", texto: "¿Qué empresa desarrolló ChatGPT?", opciones: ["Google", "Microsoft", "OpenAI", "Meta"], correcta: 2 },
       { cat: "Hardware", texto: "¿Qué componente se considera el 'cerebro' de la computadora?", opciones: ["El Disco Duro", "La Memoria RAM", "La CPU (Procesador)", "La Tarjeta Gráfica"], correcta: 2 },
+      { cat: "Hardware", texto: "¿Qué unidad de medida equivale a 1024 Megabytes?", opciones: ["1 Gigabyte", "1 Terabyte", "1 Kilobyte", "1 Byte"], correcta: 0 },
       { cat: "Internet", texto: "¿Cuál de estos NO es un navegador web?", opciones: ["Chrome", "Firefox", "Linux", "Edge"], correcta: 2 },
-      { cat: "Windows", texto: "¿Qué tecla se usa comúnmente para acceder a la ayuda en la mayoría de programas?", opciones: ["F1", "F5", "Esc", "Enter"], correcta: 0 },
+      { cat: "Internet", texto: "¿Qué significa URL?", opciones: ["Uniform Resource Locator", "Universal Routing Link", "User Request Line", "Unified Resource Listing"], correcta: 0 },
+      { cat: "Software", texto: "¿Cuál de los siguientes NO es un sistema operativo?", opciones: ["Windows", "Linux", "Microsoft Office", "macOS"], correcta: 2 },
       { cat: "Software", texto: "¿Qué tipo de programa es Microsoft Word?", opciones: ["Hoja de cálculo", "Procesador de texto", "Navegador", "Antivirus"], correcta: 1 },
       
-      // Avanzadas (Nivel 20+)
+      // AVANZADAS (Nivel 20+) (10 Preguntas)
       { cat: "Office", texto: "¿Qué fórmula de Excel suma un rango de celdas?", opciones: ["=SUMAR()", "=TOTAL()", "=SUMA()", "=ADICION()"], correcta: 2 },
+      { cat: "Office", texto: "¿En PowerPoint, qué tecla inicia la presentación desde el principio?", opciones: ["F5", "F1", "Esc", "Enter"], correcta: 0 },
+      { cat: "Office", texto: "¿Qué herramienta de Word se usa para copiar el formato de un texto a otro?", opciones: ["Copiar", "Pegar formato", "Copiar formato", "Clonar"], correcta: 2 },
       { cat: "Google Docs", texto: "¿Cómo se llama la alternativa de Google a Microsoft Excel?", opciones: ["Google Pages", "Google Sheets", "Google Slides", "Google Numbers"], correcta: 1 },
+      { cat: "Google Docs", texto: "¿Cómo se llama el almacenamiento en la nube predeterminado de Google?", opciones: ["iCloud", "OneDrive", "Dropbox", "Google Drive"], correcta: 3 },
       { cat: "Scratch", texto: "¿Qué tipo de interfaz utiliza Scratch para programar?", opciones: ["Código escrito en C++", "Bloques visuales que encajan", "Línea de comandos pura", "Solo voz"], correcta: 1 },
+      { cat: "Scratch", texto: "¿De qué color son los bloques de 'Movimiento' en Scratch?", opciones: ["Azul", "Naranja", "Amarillo", "Verde"], correcta: 0 },
+      { cat: "Scratch", texto: "¿Para qué sirve el bloque 'Por siempre'?", opciones: ["Para terminar el juego", "Para crear un bucle infinito", "Para sumar puntos", "Para cambiar el fondo"], correcta: 1 },
+      { cat: "Hardware", texto: "¿Para qué sirve la memoria RAM?", opciones: ["Guardar archivos permanentemente", "Procesar gráficos 3D", "Almacenar datos temporales en uso", "Enfriar el procesador"], correcta: 2 },
       { cat: "IA", texto: "¿Qué es el 'Machine Learning'?", opciones: ["Máquinas construyendo máquinas", "Una rama de la IA donde los sistemas aprenden de datos", "Aprender a reparar hardware", "Un nuevo sistema operativo"], correcta: 1 }
     ];
 
+    let preguntasDisponibles = [];
+    let preguntasFalladas = [];
+    let preguntaActualObj = null;
+
+    /* ================= SABÍAS QUE ================= */
     const sabiasQue = [
       "El primer virus informático se llamó 'Creeper' y fue creado en 1971.",
       "El primer ratón de computadora fue inventado en 1964 y estaba hecho de madera.",
       "La contraseña más utilizada en el mundo sigue siendo '123456'. ¡No la uses!",
       "El dominio más antiguo de Internet registrado es symbolics.com (1985).",
       "La Inteligencia Artificial ya era un concepto discutido por Alan Turing en 1950.",
-      "Cada día se envían aproximadamente 300 mil millones de correos electrónicos en el mundo."
+      "Cada día se envían aproximadamente 300 mil millones de correos electrónicos en el mundo.",
+      "El primer logotipo de Apple representaba a Isaac Newton sentado bajo un manzano.",
+      "En promedio, parpadeas menos cuando estás frente a un monitor de computadora."
     ];
+    let ultimoSabiasQue = -1;
 
-    /* ================= FUNCIONES DE UI Y PAUSA ================= */
+    function obtenerSabiasQueDiferente() {
+      let idx;
+      do {
+        idx = Math.floor(Math.random() * sabiasQue.length);
+      } while (idx === ultimoSabiasQue && sabiasQue.length > 1);
+      ultimoSabiasQue = idx;
+      return sabiasQue[idx];
+    }
+
+    /* ================= FUNCIONES DE UI Y MODALES ================= */
     let juegoPausado = false;
 
+    function abrirInstrucciones() {
+      playSound('click');
+      const modal = document.getElementById('modal-instrucciones');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.firstElementChild.classList.remove('scale-95');
+        modal.firstElementChild.classList.add('scale-100');
+      }, 10);
+    }
+
+    function cerrarInstrucciones() {
+      playSound('click');
+      const modal = document.getElementById('modal-instrucciones');
+      modal.classList.add('opacity-0');
+      modal.firstElementChild.classList.remove('scale-100');
+      modal.firstElementChild.classList.add('scale-95');
+      setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+
     function pausarJuego() {
-      // Evitar pausar si no estamos jugando o si no hay modal abierto
       if (!estadoPartida.enJuego && document.getElementById('modal-pregunta').classList.contains('hidden')) return;
-      
+      playSound('click');
       juegoPausado = true;
-      clearInterval(timerInterval); // Congelar el reloj
+      clearInterval(timerInterval);
       
       const modalPausa = document.getElementById('modal-pausa');
       modalPausa.classList.remove('hidden');
@@ -282,6 +415,7 @@
     }
 
     function reanudarJuego() {
+      playSound('click');
       juegoPausado = false;
       const modalPausa = document.getElementById('modal-pausa');
       modalPausa.classList.add('opacity-0');
@@ -290,24 +424,26 @@
       
       setTimeout(() => modalPausa.classList.add('hidden'), 300);
       
-      // Reanudar el temporizador global siempre y cuando sigamos en juego
       if (estadoPartida.enJuego && tiempoRestante > 0) {
         timerInterval = setInterval(tickTemporizador, 1000);
       }
     }
 
     function mostrarPantalla(idPantalla) {
+      playSound('click');
       document.querySelectorAll('body > div').forEach(div => {
-        if(div.id) div.classList.add('hidden');
+        if(div.id && !div.id.startsWith('modal')) div.classList.add('hidden');
       });
       document.getElementById(idPantalla).classList.remove('hidden');
     }
 
     /* ================= LÓGICA DE INICIO Y PERFIL ================= */
     function iniciarJuego() {
+      initAudio(); // Activa el contexto de audio tras la interacción del usuario
+      playSound('click');
       const nombre = document.getElementById('nombreJugador').value.trim();
       if (!nombre) {
-        alert("Por favor, ingresa tu nombre para continuar."); // Simple fallback, though modal is better
+        alert("Por favor, ingresa tu nombre para continuar."); 
         return;
       }
       jugador.nombre = nombre;
@@ -323,7 +459,6 @@
       document.getElementById('perfilPuntos').innerText = jugador.puntos;
       document.getElementById('perfilVictorias').innerText = jugador.victorias;
       
-      // Actualizar información en el header del tablero
       document.getElementById('jugadorActualTexto').innerText = `${jugador.nombre} | ${jugador.puntos} pts`;
       
       const listaLogros = document.getElementById('listaLogros');
@@ -347,8 +482,7 @@
       estadoPartida.turno = 'X';
       estadoPartida.enJuego = true;
       
-      // Reiniciar temporizador global a 120s por nivel
-      tiempoRestante = 120;
+      tiempoRestante = tiempoBaseNivel;
       tiempoExtraUsado = false;
       document.getElementById('btnTiempoExtra').disabled = false;
       document.getElementById('btnTiempoExtra').classList.remove('opacity-50', 'cursor-not-allowed');
@@ -356,7 +490,6 @@
       clearInterval(timerInterval);
       timerInterval = setInterval(tickTemporizador, 1000);
       
-      // Actualizar UI
       document.getElementById('nivelActualTexto').innerText = `Nivel ${jugador.nivel}`;
       document.getElementById('indicadorTurno').innerText = "Tu turno. Selecciona una casilla.";
       document.getElementById('indicadorTurno').className = "text-lg font-semibold mb-4 text-center h-8 text-blue-300 fade-in";
@@ -366,31 +499,32 @@
       mostrarPantalla('pantalla-juego');
     }
 
-    function actualizarUniverso() {
-      // Remover clases de universo actuales
-      document.body.className = document.body.className.replace(/universo-\d+/g, '');
-      
-      // Lógica de cambio de universo según nivel
-      let numUniverso = 1;
-      if (jugador.nivel >= 7 && jugador.nivel < 9) numUniverso = 2;
-      else if (jugador.nivel >= 9 && jugador.nivel < 11) numUniverso = 3;
-      else if (jugador.nivel >= 11 && jugador.nivel < 14) numUniverso = 4;
-      else if (jugador.nivel >= 14 && jugador.nivel < 17) numUniverso = 5;
-      else if (jugador.nivel >= 17) numUniverso = 6;
+    function obtenerUniversoActual() {
+      if (jugador.nivel >= 17) return { clase: 'universo-6', nombre: 'Abismo Cuántico' };
+      if (jugador.nivel >= 14) return { clase: 'universo-5', nombre: 'Cúmulo Solar' };
+      if (jugador.nivel >= 11) return { clase: 'universo-4', nombre: 'Sistema Carmesí' };
+      if (jugador.nivel >= 9) return { clase: 'universo-3', nombre: 'Sector Esmeralda' };
+      if (jugador.nivel >= 7) return { clase: 'universo-2', nombre: 'Galaxia Amatista' };
+      return { clase: 'universo-1', nombre: 'Nebulosa Nova' };
+    }
 
-      document.body.classList.add(`universo-${numUniverso}`);
+    function actualizarUniverso() {
+      document.body.className = document.body.className.replace(/universo-\d+/g, '');
+      const uni = obtenerUniversoActual();
+      
+      document.body.classList.add(uni.clase);
+      document.getElementById('nombreUniversoTexto').innerText = uni.nombre;
     }
 
     function renderizarTablero() {
       const grid = document.getElementById('tablero-grid');
       grid.innerHTML = '';
       
-      // Personalización de fichas (Nivel 5+)
       let iconoX = "X";
       let iconoO = "O";
       if (jugador.nivel >= 5) {
-        iconoX = "🚀"; // Cohete para el jugador
-        iconoO = "👾"; // Alien para la IA
+        iconoX = "🚀";
+        iconoO = "👾"; 
       }
 
       for (let i = 0; i < 9; i++) {
@@ -413,26 +547,40 @@
 
     function seleccionarCasilla(index) {
       if (!estadoPartida.enJuego || estadoPartida.tablero[index] !== null || estadoPartida.turno !== 'X') return;
-      
+      playSound('click');
       estadoPartida.casillaSeleccionada = index;
       lanzarPregunta();
     }
 
     /* ================= SISTEMA DE PREGUNTAS ================= */
     function lanzarPregunta() {
-      // Elegir pregunta (priorizar falladas)
-      if (preguntasFalladas.length > 0 && Math.random() > 0.5) {
+      if (preguntasFalladas.length > 0 && Math.random() > 0.4) {
         preguntaActualObj = preguntasFalladas.shift();
       } else {
-        // Filtrar avanzadas si nivel < 20
-        let disponibles = bancoPreguntas;
-        if (jugador.nivel < 20) {
-           disponibles = bancoPreguntas.filter(p => !["Office", "Google Docs", "Scratch"].includes(p.cat));
+        // Rellenar banco disponible si se agotó
+        if (preguntasDisponibles.length === 0) {
+          preguntasDisponibles = [...bancoPreguntas];
         }
-        preguntaActualObj = disponibles[Math.floor(Math.random() * disponibles.length)];
+
+        // Filtrar por nivel avanzado o no
+        let filtradas = preguntasDisponibles;
+        if (jugador.nivel < 20) {
+           filtradas = preguntasDisponibles.filter(p => !["Office", "Google Docs", "Scratch"].includes(p.cat));
+        }
+
+        // Rescate: si filtramos todas las básicas y no quedan
+        if (filtradas.length === 0) {
+           preguntasDisponibles = [...bancoPreguntas];
+           filtradas = preguntasDisponibles.filter(p => !["Office", "Google Docs", "Scratch"].includes(p.cat));
+        }
+
+        const idxRandom = Math.floor(Math.random() * filtradas.length);
+        preguntaActualObj = filtradas[idxRandom];
+
+        // Eliminar del banco disponible para no repetir
+        preguntasDisponibles = preguntasDisponibles.filter(p => p.texto !== preguntaActualObj.texto);
       }
 
-      // Preparar UI
       document.getElementById('categoriaPregunta').innerText = preguntaActualObj.cat;
       document.getElementById('textoPregunta').innerText = preguntaActualObj.texto;
       document.getElementById('mensajePregunta').classList.add('hidden');
@@ -448,10 +596,8 @@
         contenedorOpciones.appendChild(btn);
       });
 
-      // Ya no reiniciamos el tiempo aquí, es un tiempo global.
       actualizarReloj();
 
-      // Mostrar Modal
       const modal = document.getElementById('modal-pregunta');
       modal.classList.remove('hidden');
       setTimeout(() => modal.classList.remove('opacity-0'), 10);
@@ -467,12 +613,11 @@
         clearInterval(timerInterval);
         estadoPartida.enJuego = false;
         cerrarModalPregunta();
-        manejarDerrota(true); // Pasar un flag indicando que fue por tiempo
+        manejarDerrota(true);
       }
     }
 
     function actualizarReloj() {
-      // Sincronizar UI de ambos relojes (Tablero y Modal)
       const elTiempoGlobal = document.getElementById('tiempoGlobal');
       const elIconoGlobal = document.getElementById('iconoTiempoGlobal');
       const elTiempoPregunta = document.getElementById('tiempoPregunta');
@@ -496,6 +641,7 @@
 
     function pedirTiempoExtra() {
       if (!tiempoExtraUsado) {
+        playSound('click');
         tiempoRestante += 30;
         tiempoExtraUsado = true;
         actualizarReloj();
@@ -506,34 +652,31 @@
     }
 
     function responderPregunta(idxSeleccionado, btnElement) {
-      // Ya NO detenemos el tiempo global al responder, el tiempo sigue corriendo en el turno de la IA
-      
-      // Deshabilitar botones
       const botones = document.getElementById('opcionesPregunta').querySelectorAll('button');
       botones.forEach(b => b.disabled = true);
 
       const esCorrecta = (idxSeleccionado === preguntaActualObj.correcta);
       
       if (esCorrecta) {
+        playSound('correct');
         btnElement.classList.replace('bg-white/10', 'bg-green-500');
         btnElement.classList.replace('hover:bg-white/20', 'hover:bg-green-600');
       } else {
+        playSound('wrong');
         btnElement.classList.replace('bg-white/10', 'bg-red-500');
         btnElement.classList.replace('hover:bg-white/20', 'hover:bg-red-600');
-        // Resaltar correcta
         botones[preguntaActualObj.correcta].classList.replace('bg-white/10', 'bg-green-500');
       }
 
-      setTimeout(() => manejarRespuesta(esCorrecta), 1500);
+      setTimeout(() => manejarRespuesta(esCorrecta), 1200);
     }
 
     function manejarRespuesta(esCorrecta) {
-      if (!estadoPartida.enJuego) return; // Por si se acabó el tiempo durante la animación
+      if (!estadoPartida.enJuego) return;
 
       cerrarModalPregunta();
 
       if (esCorrecta) {
-        // Colocar ficha
         estadoPartida.tablero[estadoPartida.casillaSeleccionada] = 'X';
         renderizarTablero();
         
@@ -544,7 +687,6 @@
           setTimeout(turnoMaquina, 1000);
         }
       } else {
-        // Falló
         preguntasFalladas.push(preguntaActualObj);
         document.getElementById('indicadorTurno').innerText = "¡Fallaste! Pierdes el turno. Turno de AIVA...";
         document.getElementById('indicadorTurno').className = "text-lg font-semibold mb-4 text-center h-8 text-red-400 fade-in";
@@ -566,18 +708,10 @@
       const celdasVacias = estadoPartida.tablero.map((val, idx) => val === null ? idx : null).filter(val => val !== null);
       if (celdasVacias.length === 0) return;
 
-      // Lógica simple: Intentar ganar, intentar bloquear, o aleatorio
-      let casillaElegida = -1;
-
-      // 1. Intentar ganar
-      casillaElegida = buscarMovimientoGanador('O');
-      
-      // 2. Intentar bloquear a X
+      let casillaElegida = buscarMovimientoGanador('O');
       if (casillaElegida === -1) {
         casillaElegida = buscarMovimientoGanador('X');
       }
-
-      // 3. Aleatorio
       if (casillaElegida === -1) {
         casillaElegida = celdasVacias[Math.floor(Math.random() * celdasVacias.length)];
       }
@@ -594,9 +728,9 @@
 
     function buscarMovimientoGanador(jugadorFicha) {
       const combinaciones = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8], // Horizontales
-        [0, 3, 6], [1, 4, 7], [2, 5, 8], // Verticales
-        [0, 4, 8], [2, 4, 6]             // Diagonales
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
       ];
 
       for (let combo of combinaciones) {
@@ -625,19 +759,22 @@
       });
 
       if (victoria) {
-        clearInterval(timerInterval); // Detener tiempo al ganar o perder
+        clearInterval(timerInterval);
         estadoPartida.enJuego = false;
         if (jugadorFicha === 'X') {
+          playSound('win');
           manejarVictoria();
         } else {
+          playSound('lose');
           manejarDerrota();
         }
         return true;
       }
 
       if (!estadoPartida.tablero.includes(null)) {
-        clearInterval(timerInterval); // Detener tiempo al empatar
+        clearInterval(timerInterval);
         estadoPartida.enJuego = false;
+        playSound('tie');
         manejarEmpate();
         return true;
       }
@@ -648,6 +785,9 @@
     function manejarVictoria() {
       jugador.victorias++;
       jugador.puntos += 3;
+      estadoPartida.rachaEmpates = 0; // Reset de racha de empates
+      tiempoBaseNivel = 120; // Restaura tiempo
+      
       verificarLogros();
       actualizarPerfilUI();
       
@@ -657,9 +797,8 @@
       setTimeout(() => {
         document.getElementById('tituloInterludio').innerText = `¡Nivel ${jugador.nivel} Completado! (+3 pts)`;
         document.getElementById('tituloInterludio').className = "text-3xl font-bold mb-2 text-green-400";
-        document.getElementById('textoSabiasQue').innerText = sabiasQue[Math.floor(Math.random() * sabiasQue.length)];
+        document.getElementById('textoSabiasQue').innerText = obtenerSabiasQueDiferente();
         
-        // Restaurar el botón original
         const btnSiguiente = document.querySelector('#pantalla-interludio button[onclick="avanzarNivel()"]');
         if(btnSiguiente) {
           btnSiguiente.innerText = "Siguiente Nivel";
@@ -667,10 +806,11 @@
         }
 
         mostrarPantalla('pantalla-interludio');
-      }, 3000); // Aumentado a 3 segundos para que aprecie su jugada ganadora
+      }, 3000);
     }
 
     function manejarDerrota(porTiempo = false) {
+      if (porTiempo) playSound('lose');
       jugador.derrotas++;
       actualizarPerfilUI();
 
@@ -684,9 +824,8 @@
       setTimeout(() => {
         document.getElementById('tituloInterludio').innerText = porTiempo ? "¡Tiempo Agotado! (+0 pts)" : "Inténtalo de nuevo (+0 pts)";
         document.getElementById('tituloInterludio').className = "text-3xl font-bold mb-2 text-red-500";
-        document.getElementById('textoSabiasQue').innerText = sabiasQue[Math.floor(Math.random() * sabiasQue.length)];
+        document.getElementById('textoSabiasQue').innerText = obtenerSabiasQueDiferente();
         
-        // Cambiar botón a "Reintentar Nivel"
         const btnSiguiente = document.querySelector('#pantalla-interludio button[onclick="avanzarNivel()"]') || document.querySelector('#pantalla-interludio button[onclick="reintentarNivel()"]');
         if(btnSiguiente) {
           btnSiguiente.innerText = "Reintentar Nivel";
@@ -694,11 +833,17 @@
         }
 
         mostrarPantalla('pantalla-interludio');
-      }, 3000); // Aumentado a 3 segundos
+      }, 3000);
     }
 
     function manejarEmpate() {
       jugador.puntos += 1;
+      estadoPartida.rachaEmpates++;
+      
+      // Lógica de penalización de tiempo
+      if (estadoPartida.rachaEmpates === 1) tiempoBaseNivel = 60;
+      else if (estadoPartida.rachaEmpates >= 2) tiempoBaseNivel = 25;
+
       actualizarPerfilUI();
 
       document.getElementById('indicadorTurno').innerText = "¡Empate!";
@@ -707,9 +852,11 @@
       setTimeout(() => {
         document.getElementById('tituloInterludio').innerText = `Un combate reñido (+1 pt)`;
         document.getElementById('tituloInterludio').className = "text-3xl font-bold mb-2 text-yellow-400";
-        document.getElementById('textoSabiasQue').innerText = sabiasQue[Math.floor(Math.random() * sabiasQue.length)];
         
-        // Cambiar botón a "Reintentar Nivel"
+        // Mensaje extra si el tiempo baja
+        const msjExtra = `\n(Atención: Siguiente juego ${tiempoBaseNivel}s)`;
+        document.getElementById('textoSabiasQue').innerText = obtenerSabiasQueDiferente() + "\n\n" + msjExtra;
+        
         const btnSiguiente = document.querySelector('#pantalla-interludio button[onclick="avanzarNivel()"]') || document.querySelector('#pantalla-interludio button[onclick="reintentarNivel()"]');
         if(btnSiguiente) {
           btnSiguiente.innerText = "Reintentar Nivel";
@@ -717,12 +864,12 @@
         }
 
         mostrarPantalla('pantalla-interludio');
-      }, 3000); // Aumentado a 3 segundos
+      }, 3000);
     }
 
     function avanzarNivel() {
+      playSound('click');
       jugador.nivel++;
-      // Restaurar el botón original por si viene de una derrota/empate
       const btnSiguiente = document.querySelector('#pantalla-interludio button');
       btnSiguiente.innerText = "Siguiente Nivel";
       btnSiguiente.onclick = avanzarNivel;
@@ -732,7 +879,7 @@
     }
 
     function reintentarNivel() {
-      // Restaurar el botón
+      playSound('click');
       const btnSiguiente = document.querySelector('#pantalla-interludio button');
       btnSiguiente.innerText = "Siguiente Nivel";
       btnSiguiente.onclick = avanzarNivel;
@@ -741,6 +888,7 @@
     }
 
     function reiniciarPartida() {
+      playSound('click');
       mostrarPantalla('pantalla-inicio');
     }
 
@@ -752,20 +900,29 @@
         }
       };
 
+      // Logros Generales
       if (jugador.victorias >= 1) añadirLogro("Primera Victoria");
       if (jugador.victorias >= 5) añadirLogro("Racha Imparable (5)");
-      if (jugador.nivel >= 5) añadirLogro("Explorador de Universos (Nvl 5)");
+      if (jugador.nivel >= 5) añadirLogro("Piloto Espacial (Nvl 5)");
+      
+      // Medallas de Universo
+      if (jugador.nivel >= 7) añadirLogro("Medalla: Galaxia Amatista");
+      if (jugador.nivel >= 9) añadirLogro("Medalla: Sector Esmeralda");
+      if (jugador.nivel >= 11) añadirLogro("Medalla: Sistema Carmesí");
+      if (jugador.nivel >= 14) añadirLogro("Medalla: Cúmulo Solar");
+      if (jugador.nivel >= 17) añadirLogro("Medalla: Abismo Cuántico");
+
       if (jugador.nivel >= 20) añadirLogro("Maestro AIVA (Nvl 20)");
     }
 
     /* ================= DESCARGA FHD (<canvas>) ================= */
     function descargarLogrosFHD() {
+      playSound('click');
       const canvas = document.createElement('canvas');
       canvas.width = 1920;
       canvas.height = 1080;
       const ctx = canvas.getContext('2d');
 
-      // Determinar qué íconos usa el jugador actualmente
       let iconoX = "X";
       let iconoO = "O";
       if (jugador.nivel >= 5) {
@@ -773,14 +930,12 @@
         iconoO = "👾";
       }
 
-      // 1. Fondo (Deep Space / Degradado agradable)
       const gradiente = ctx.createLinearGradient(0, 0, 1920, 1080);
-      gradiente.addColorStop(0, '#0f172a'); // Azul oscuro
-      gradiente.addColorStop(1, '#3b0764'); // Púrpura oscuro
+      gradiente.addColorStop(0, '#0f172a'); 
+      gradiente.addColorStop(1, '#3b0764'); 
       ctx.fillStyle = gradiente;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // 2. Efecto de Estrellas de fondo
       ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
       for(let i = 0; i < 150; i++) {
         ctx.beginPath();
@@ -788,20 +943,15 @@
         ctx.fill();
       }
 
-      // Configuraciones de texto generales
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      // ==========================================
-      // SECCIÓN DERECHA: TARJETA DE INFORMACIÓN
-      // ==========================================
       const cardX = 1100;
       const cardY = 100;
       const cardW = 720;
       const cardH = 880;
-      const centerX = cardX + (cardW / 2); // 1460
+      const centerX = cardX + (cardW / 2); 
 
-      // Panel translúcido de la tarjeta
       ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
       ctx.roundRect(cardX, cardY, cardW, cardH, 40);
       ctx.fill();
@@ -809,12 +959,10 @@
       ctx.lineWidth = 3;
       ctx.stroke();
 
-      // Título
       ctx.fillStyle = '#FFFFFF';
       ctx.font = 'bold 45px "Arial", sans-serif';
       ctx.fillText('Academia AIVA - Certificado', centerX, 200);
 
-      // Nombre del Jugador CON su ficha actual en su propio color
       ctx.font = 'bold 90px "Arial", sans-serif';
       const gap = 20;
       const anchoIcono = ctx.measureText(iconoX).width;
@@ -823,50 +971,41 @@
       const startX = centerX - (anchoTotal / 2);
 
       ctx.textAlign = 'left';
-      // Dibujar la ficha en color Rojo
       ctx.fillStyle = '#FF4742'; 
       ctx.fillText(iconoX, startX, 310);
-      // Dibujar el nombre en color Azul
       ctx.fillStyle = '#93c5fd'; 
       ctx.fillText(jugador.nombre, startX + anchoIcono + gap, 310);
       
-      ctx.textAlign = 'center'; // Restaurar alineación centrada
+      ctx.textAlign = 'center'; 
 
-      // Estadísticas
-      ctx.fillStyle = '#e2e8f0'; // slate-200
+      ctx.fillStyle = '#e2e8f0'; 
       ctx.font = '35px "Arial", sans-serif';
       ctx.fillText(`Nivel: ${jugador.nivel}  |  Puntos: ${jugador.puntos}  |  Victorias: ${jugador.victorias}`, centerX, 410);
 
-      // Línea separadora
       ctx.beginPath();
       ctx.moveTo(cardX + 80, 480);
       ctx.lineTo(cardX + cardW - 80, 480);
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
       ctx.stroke();
 
-      // Lista de Logros
-      ctx.fillStyle = '#fde047'; // yellow-300
+      ctx.fillStyle = '#fde047'; 
       ctx.font = 'bold 45px "Arial", sans-serif';
-      ctx.fillText('Logros Desbloqueados:', centerX, 560);
+      ctx.fillText('Logros Desbloqueados:', centerX, 550);
 
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = '35px "Arial", sans-serif';
-      let yLogro = 650;
+      ctx.font = '32px "Arial", sans-serif'; // Reducido un poco para que quepan más
+      let yLogro = 620;
       jugador.logros.forEach((logro, index) => {
-        if (index < 6) { // Mostramos hasta 6 logros
+        if (index < 7) {  // Aumentado el límite visible a 7 logros
           ctx.fillText(`★ ${logro}`, centerX, yLogro);
-          yLogro += 55;
+          yLogro += 45;
         }
       });
       
-      if (jugador.logros.length > 6) {
-         ctx.fillText(`... y ${jugador.logros.length - 6} más.`, centerX, yLogro);
+      if (jugador.logros.length > 7) {
+         ctx.fillText(`... y ${jugador.logros.length - 7} más.`, centerX, yLogro);
       }
 
-      // ==========================================
-      // SECCIÓN IZQUIERDA: ESTADO DEL TABLERO
-      // ==========================================
-      // Subtítulo con la ficha del oponente en color verde
       ctx.font = 'bold 50px "Arial", sans-serif';
       const textoBase = 'Última Partida (vs ';
       const anchoBase = ctx.measureText(textoBase).width;
@@ -879,42 +1018,37 @@
       ctx.fillStyle = '#FFFFFF';
       ctx.fillText(textoBase, startSubX, 140);
       
-      ctx.fillStyle = '#2EE59D'; // Color Verde para la IA
+      ctx.fillStyle = '#2EE59D'; 
       ctx.fillText(iconoO, startSubX + anchoBase, 140);
       
       ctx.fillStyle = '#FFFFFF';
       ctx.fillText(')', startSubX + anchoBase + anchoOponente, 140);
       
-      ctx.textAlign = 'center'; // Restaurar alineación centrada
+      ctx.textAlign = 'center'; 
 
       const boardX = 150;
       const boardY = 200;
       const cellSize = 260;
-      const boardSize = cellSize * 3; // 780x780
+      const boardSize = cellSize * 3; 
 
-      // Fondo del tablero
       ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
       ctx.roundRect(boardX, boardY, boardSize, boardSize, 30);
       ctx.fill();
 
-      // Líneas del tablero
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
       ctx.lineWidth = 12;
       ctx.lineCap = 'round';
       ctx.beginPath();
-      // Verticales
       ctx.moveTo(boardX + cellSize, boardY + 30);
       ctx.lineTo(boardX + cellSize, boardY + boardSize - 30);
       ctx.moveTo(boardX + cellSize * 2, boardY + 30);
       ctx.lineTo(boardX + cellSize * 2, boardY + boardSize - 30);
-      // Horizontales
       ctx.moveTo(boardX + 30, boardY + cellSize);
       ctx.lineTo(boardX + boardSize - 30, boardY + cellSize);
       ctx.moveTo(boardX + 30, boardY + cellSize * 2);
       ctx.lineTo(boardX + boardSize - 30, boardY + cellSize * 2);
       ctx.stroke();
 
-      // Dibujar las piezas actuales del array "estadoPartida.tablero"
       for (let i = 0; i < 9; i++) {
         if (estadoPartida.tablero[i] !== null) {
           const row = Math.floor(i / 3);
@@ -923,25 +1057,23 @@
           const cellCenterY = boardY + (row * cellSize) + (cellSize / 2);
 
           if (estadoPartida.tablero[i] === 'X') {
-            ctx.fillStyle = '#FF4742'; // Rojo
+            ctx.fillStyle = '#FF4742'; 
             ctx.font = iconoX === '🚀' ? '130px Arial' : 'bold 150px Arial';
             ctx.fillText(iconoX, cellCenterX, cellCenterY);
           } else if (estadoPartida.tablero[i] === 'O') {
-            ctx.fillStyle = '#2EE59D'; // Verde
+            ctx.fillStyle = '#2EE59D'; 
             ctx.font = iconoO === '👾' ? '130px Arial' : 'bold 150px Arial';
             ctx.fillText(iconoO, cellCenterX, cellCenterY);
           }
         }
       }
 
-      // Descargar
       const link = document.createElement('a');
       link.download = `Academia_AIVA_${jugador.nombre.replace(/\s+/g, '_')}_Logros.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
     }
 
-    // Helper para rectángulos con bordes redondeados en canvas (soporte antiguo)
     CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
       if (w < 2 * r) r = w / 2;
       if (h < 2 * r) r = h / 2;
