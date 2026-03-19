@@ -120,17 +120,22 @@
   
   <!-- Modal Instrucciones -->
   <div id="modal-instrucciones" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[70] hidden opacity-0 transition-opacity duration-300">
-    <div class="glass-panel p-8 rounded-3xl max-w-md w-full transform scale-95 transition-transform duration-300 relative">
-      <h2 class="text-2xl font-bold mb-4 text-center">Instrucciones</h2>
-      <ul class="list-disc list-inside space-y-2 text-sm opacity-90 mb-6">
-        <li>Juegas contra la Inteligencia Artificial de AIVA.</li>
-        <li>Para colocar una ficha, debes responder correctamente a una pregunta.</li>
-        <li>El temporizador es global para todo el nivel (normalmente 120s).</li>
-        <li>Si <strong>empatas</strong>, el tiempo del siguiente juego se reduce (¡hasta 25s!). Gana para recuperarlo.</li>
-        <li>Si fallas una pregunta, pierdes el turno y AIVA jugará.</li>
-        <li>¡Avanza de nivel, descubre universos y obtén logros y puntos!</li>
-      </ul>
-      <button onclick="cerrarInstrucciones()" class="w-full py-3 bg-blue-500 hover:bg-blue-600 rounded-xl font-bold transition-colors shadow-lg">Entendido</button>
+    <div class="glass-panel p-8 rounded-3xl max-w-md w-full transform scale-95 transition-transform duration-300 relative max-h-[90vh] flex flex-col">
+      <h2 class="text-2xl font-bold mb-4 text-center">Instrucciones y Etapas</h2>
+      <div class="overflow-y-auto pr-2 mb-6 text-sm opacity-90 space-y-3 custom-scrollbar">
+        <p>Juegas contra AIVA. Para colocar una ficha, debes responder correctamente a una pregunta. ¡Si fallas pierdes el turno!</p>
+        <p>El juego está dividido en 6 Universos de aprendizaje:</p>
+        <ul class="list-disc list-inside space-y-1 ml-2 text-yellow-100">
+          <li><strong>Etapa 1 (Nvl 1-6):</strong> Computadora y Cuidados.</li>
+          <li><strong>Etapa 2 (Nvl 7-8):</strong> Windows, Programas y Atajos.</li>
+          <li><strong>Etapa 3 (Nvl 9-10):</strong> Paint, Word y Procesos.</li>
+          <li><strong>Etapa 4 (Nvl 11-13):</strong> Internet e Inteligencia Artificial.</li>
+          <li><strong>Etapa 5 (Nvl 14-16):</strong> Excel y PowerPoint.</li>
+          <li><strong>Etapa 6 (Nvl 17+):</strong> Scratch, HTML y Canva.</li>
+        </ul>
+        <p><em>Regla de Empate:</em> ¡Cuidado! Si empatas, el tiempo del siguiente juego se reduce (hasta 25s). Gana para recuperar los 120s.</p>
+      </div>
+      <button onclick="cerrarInstrucciones()" class="w-full py-3 bg-blue-500 hover:bg-blue-600 rounded-xl font-bold transition-colors shadow-lg mt-auto">Entendido</button>
     </div>
   </div>
 
@@ -319,35 +324,92 @@
     let tiempoRestante = 120;
     let tiempoExtraUsado = false;
 
-    /* ================= BANCO DE PREGUNTAS (100% MÁS) ================= */
+    /* ================= MEGA BANCO DE PREGUNTAS (EXCLUSIVO POR UNIVERSO) ================= */
+    // Universos: 1(Computadora), 2(Windows), 3(Paint/Word), 4(Internet/IA), 5(Excel/PPT), 6(Scratch/HTML/Canva)
     const bancoPreguntas = [
-      // BÁSICAS (14 Preguntas)
-      { cat: "IA", texto: "¿Qué significa 'IA'?", opciones: ["Internet Avanzado", "Inteligencia Artificial", "Interfaz Activa", "Intercambio Anónimo"], correcta: 1 },
-      { cat: "Windows", texto: "¿Cuál es el atajo de teclado para COPIAR en Windows?", opciones: ["Ctrl + C", "Ctrl + V", "Ctrl + X", "Ctrl + P"], correcta: 0 },
-      { cat: "Windows", texto: "¿Cuál es el atajo de teclado para PEGAR?", opciones: ["Ctrl + C", "Ctrl + V", "Ctrl + P", "Ctrl + X"], correcta: 1 },
-      { cat: "Windows", texto: "¿Cuál es el atajo de teclado para DESHACER una acción?", opciones: ["Ctrl + Z", "Ctrl + Y", "Ctrl + U", "Ctrl + D"], correcta: 0 },
-      { cat: "Internet", texto: "¿Qué significa 'WWW'?", opciones: ["World Wide Web", "World Web Windows", "Wide Web World", "Windows World Web"], correcta: 0 },
-      { cat: "Internet", texto: "¿Qué símbolo se usa obligatoriamente en un correo electrónico?", opciones: ["#", "$", "@", "&"], correcta: 2 },
-      { cat: "IA", texto: "¿Qué es ChatGPT?", opciones: ["Un antivirus", "Un modelo de lenguaje de IA", "Un sistema operativo", "Un navegador web"], correcta: 1 },
-      { cat: "IA", texto: "¿Qué empresa desarrolló ChatGPT?", opciones: ["Google", "Microsoft", "OpenAI", "Meta"], correcta: 2 },
-      { cat: "Hardware", texto: "¿Qué componente se considera el 'cerebro' de la computadora?", opciones: ["El Disco Duro", "La Memoria RAM", "La CPU (Procesador)", "La Tarjeta Gráfica"], correcta: 2 },
-      { cat: "Hardware", texto: "¿Qué unidad de medida equivale a 1024 Megabytes?", opciones: ["1 Gigabyte", "1 Terabyte", "1 Kilobyte", "1 Byte"], correcta: 0 },
-      { cat: "Internet", texto: "¿Cuál de estos NO es un navegador web?", opciones: ["Chrome", "Firefox", "Linux", "Edge"], correcta: 2 },
-      { cat: "Internet", texto: "¿Qué significa URL?", opciones: ["Uniform Resource Locator", "Universal Routing Link", "User Request Line", "Unified Resource Listing"], correcta: 0 },
-      { cat: "Software", texto: "¿Cuál de los siguientes NO es un sistema operativo?", opciones: ["Windows", "Linux", "Microsoft Office", "macOS"], correcta: 2 },
-      { cat: "Software", texto: "¿Qué tipo de programa es Microsoft Word?", opciones: ["Hoja de cálculo", "Procesador de texto", "Navegador", "Antivirus"], correcta: 1 },
-      
-      // AVANZADAS (Nivel 20+) (10 Preguntas)
-      { cat: "Office", texto: "¿Qué fórmula de Excel suma un rango de celdas?", opciones: ["=SUMAR()", "=TOTAL()", "=SUMA()", "=ADICION()"], correcta: 2 },
-      { cat: "Office", texto: "¿En PowerPoint, qué tecla inicia la presentación desde el principio?", opciones: ["F5", "F1", "Esc", "Enter"], correcta: 0 },
-      { cat: "Office", texto: "¿Qué herramienta de Word se usa para copiar el formato de un texto a otro?", opciones: ["Copiar", "Pegar formato", "Copiar formato", "Clonar"], correcta: 2 },
-      { cat: "Google Docs", texto: "¿Cómo se llama la alternativa de Google a Microsoft Excel?", opciones: ["Google Pages", "Google Sheets", "Google Slides", "Google Numbers"], correcta: 1 },
-      { cat: "Google Docs", texto: "¿Cómo se llama el almacenamiento en la nube predeterminado de Google?", opciones: ["iCloud", "OneDrive", "Dropbox", "Google Drive"], correcta: 3 },
-      { cat: "Scratch", texto: "¿Qué tipo de interfaz utiliza Scratch para programar?", opciones: ["Código escrito en C++", "Bloques visuales que encajan", "Línea de comandos pura", "Solo voz"], correcta: 1 },
-      { cat: "Scratch", texto: "¿De qué color son los bloques de 'Movimiento' en Scratch?", opciones: ["Azul", "Naranja", "Amarillo", "Verde"], correcta: 0 },
-      { cat: "Scratch", texto: "¿Para qué sirve el bloque 'Por siempre'?", opciones: ["Para terminar el juego", "Para crear un bucle infinito", "Para sumar puntos", "Para cambiar el fondo"], correcta: 1 },
-      { cat: "Hardware", texto: "¿Para qué sirve la memoria RAM?", opciones: ["Guardar archivos permanentemente", "Procesar gráficos 3D", "Almacenar datos temporales en uso", "Enfriar el procesador"], correcta: 2 },
-      { cat: "IA", texto: "¿Qué es el 'Machine Learning'?", opciones: ["Máquinas construyendo máquinas", "Una rama de la IA donde los sistemas aprenden de datos", "Aprender a reparar hardware", "Un nuevo sistema operativo"], correcta: 1 }
+      // --- UNIVERSO 1: Nebulosa Nova (Niveles 1-6) - Computadora y Cuidados ---
+      { universo: 1, cat: "Computadora", texto: "¿Qué componente se considera el 'cerebro' de la computadora?", opciones: ["El disco duro", "La memoria RAM", "El procesador (CPU)", "El monitor"], correcta: 2 },
+      { universo: 1, cat: "Computadora", texto: "¿Para qué sirve la memoria RAM?", opciones: ["Para guardar fotos para siempre", "Para almacenar temporalmente datos de programas en uso", "Para enfriar la placa base", "Para reproducir sonido"], correcta: 1 },
+      { universo: 1, cat: "Hardware", texto: "¿Cuál de estos es un dispositivo de entrada (Input)?", opciones: ["La impresora", "El monitor", "Los parlantes", "El teclado"], correcta: 3 },
+      { universo: 1, cat: "Hardware", texto: "¿Cuál de estos es un dispositivo de salida (Output)?", opciones: ["El mouse", "El micrófono", "El monitor", "El escáner"], correcta: 2 },
+      { universo: 1, cat: "Cuidados", texto: "¿Qué acción ayuda a mantener tu computadora en buen estado?", opciones: ["Mantenerla en un lugar con poca ventilación", "No comer ni beber líquidos cerca de ella", "Apagarla desconectando el cable directamente", "Limpiar la pantalla con papel higiénico"], correcta: 1 },
+      { universo: 1, cat: "Cuidados", texto: "¿Cuál es la forma correcta de apagar la computadora en Windows?", opciones: ["Presionar el botón de la torre de golpe", "Desde el menú Inicio -> Apagar", "Desconectando el enchufe", "Cerrando todas las ventanas rápidamente"], correcta: 1 },
+      { universo: 1, cat: "Almacenamiento", texto: "¿Para qué sirve el disco duro o unidad SSD?", opciones: ["Para conectarse a internet", "Para enfriar el sistema", "Para procesar los gráficos 3D", "Para guardar archivos y programas permanentemente"], correcta: 3 },
+      { universo: 1, cat: "Almacenamiento", texto: "¿Cuál de las siguientes unidades de medida es la más grande?", opciones: ["Megabyte (MB)", "Gigabyte (GB)", "Kilobyte (KB)", "Terabyte (TB)"], correcta: 3 },
+      { universo: 1, cat: "Cuidados", texto: "¿Cuál es un cuidado básico para el teclado?", opciones: ["Escribir con mucha fuerza", "No golpearlo y mantenerlo libre de polvo", "Lavarlo con agua y jabón", "Comer galletas encima de él"], correcta: 1 },
+      { universo: 1, cat: "Hardware", texto: "¿Qué hace generalmente el botón de clic derecho del mouse?", opciones: ["Selecciona un texto", "Cierra el programa", "Abre un menú de opciones o contexto", "Apaga la pantalla"], correcta: 2 },
+      { universo: 1, cat: "Conceptos", texto: "¿Qué significa el término 'Hardware'?", opciones: ["Los programas instalados", "Los virus de la computadora", "La parte física y tangible de la computadora", "El sistema operativo"], correcta: 2 },
+      { universo: 1, cat: "Hardware", texto: "¿Qué periférico nos permite digitalizar documentos de papel?", opciones: ["La impresora", "El escáner", "El proyector", "El router"], correcta: 1 },
+
+      // --- UNIVERSO 2: Galaxia Amatista (Niveles 7-8) - Windows, Programas y Atajos ---
+      { universo: 2, cat: "Windows", texto: "¿Cómo se llama la pantalla principal de Windows que ves al iniciar sesión?", opciones: ["Fondo de pantalla", "Menú principal", "Escritorio", "Panel de control"], correcta: 2 },
+      { universo: 2, cat: "Atajos", texto: "¿Cuál es el atajo de teclado para COPIAR un elemento?", opciones: ["Ctrl + C", "Ctrl + X", "Ctrl + V", "Ctrl + P"], correcta: 0 },
+      { universo: 2, cat: "Atajos", texto: "¿Cuál es el atajo de teclado para PEGAR un elemento?", opciones: ["Ctrl + Z", "Ctrl + Y", "Ctrl + C", "Ctrl + V"], correcta: 3 },
+      { universo: 2, cat: "Atajos", texto: "¿Qué combinación cierra la ventana o programa actual?", opciones: ["Ctrl + C", "Win + D", "Shift + Esc", "Alt + F4"], correcta: 3 },
+      { universo: 2, cat: "Windows", texto: "¿A dónde van los archivos cuando los eliminas normalmente?", opciones: ["Se borran para siempre", "A la Papelera de reciclaje", "A la carpeta Descargas", "Al disco secundario"], correcta: 1 },
+      { universo: 2, cat: "Ventanas", texto: "¿Qué hace el botón de 'Minimizar' en una ventana?", opciones: ["Oculta la ventana en la barra de tareas", "La hace más pequeña en el centro de la pantalla", "Cierra el programa sin guardar", "Muestra la pantalla completa"], correcta: 0 },
+      { universo: 2, cat: "Programas", texto: "¿Cómo se llama la herramienta para navegar por tus carpetas y documentos?", opciones: ["Navegador Web", "Explorador de Archivos", "Panel de Control", "Símbolo del sistema"], correcta: 1 },
+      { universo: 2, cat: "Atajos", texto: "¿Qué combinación de teclas sirve para DESHACER la última acción?", opciones: ["Ctrl + Y", "Ctrl + S", "Ctrl + Z", "Ctrl + X"], correcta: 2 },
+      { universo: 2, cat: "Atajos", texto: "¿Qué atajo se utiliza para CORTAR un archivo o texto?", opciones: ["Ctrl + V", "Ctrl + C", "Ctrl + X", "Ctrl + Z"], correcta: 2 },
+      { universo: 2, cat: "Windows", texto: "¿Cómo se llama la franja que suele estar en la parte inferior de la pantalla?", opciones: ["Barra de estado", "Barra de herramientas", "Barra de progreso", "Barra de tareas"], correcta: 3 },
+      { universo: 2, cat: "Atajos", texto: "¿Qué atajo sirve para SELECCIONAR TODO el contenido de una carpeta o texto?", opciones: ["Ctrl + E (o Ctrl+A en inglés)", "Ctrl + T", "Ctrl + M", "Alt + S"], correcta: 0 },
+      { universo: 2, cat: "Teclado", texto: "¿Para qué sirve principalmente la tecla con el logo de Windows?", opciones: ["Para apagar la computadora", "Para abrir el Menú Inicio", "Para cerrar sesión", "Para buscar virus"], correcta: 1 },
+
+      // --- UNIVERSO 3: Sector Esmeralda (Niveles 9-10) - Paint, Word y Procesos ---
+      { universo: 3, cat: "Word", texto: "En Word, ¿qué hace el botón que tiene una 'N' mayúscula gruesa?", opciones: ["Abre un nuevo documento", "Aplica el formato Negrita al texto", "Cierra el programa", "Añade notas al margen"], correcta: 1 },
+      { universo: 3, cat: "Paint", texto: "En Paint, ¿qué herramienta rellena todo un espacio cerrado de un solo color?", opciones: ["El pincel", "La lupa", "El bote de pintura", "El aerógrafo"], correcta: 2 },
+      { universo: 3, cat: "Word", texto: "¿Cuál es el atajo de teclado para GUARDAR un documento en Word (en español)?", opciones: ["Ctrl + S", "Ctrl + G", "Ctrl + P", "Ctrl + N"], correcta: 1 },
+      { universo: 3, cat: "Atajos", texto: "¿Qué atajo se usa comúnmente para IMPRIMIR un documento?", opciones: ["Ctrl + I", "Ctrl + S", "Ctrl + P", "Ctrl + PrtScn"], correcta: 2 },
+      { universo: 3, cat: "Word", texto: "En Word, ¿qué significa 'Justificar' un texto?", opciones: ["Ponerlo en el centro exacto", "Alineado hacia la derecha", "Alinear el texto para que los bordes izquierdo y derecho estén parejos", "Hacer la letra más grande"], correcta: 2 },
+      { universo: 3, cat: "Paint", texto: "En Paint, ¿qué herramienta te permite copiar un color específico de tu dibujo?", opciones: ["La goma de borrar", "El selector de color (Cuentagotas)", "El lápiz", "El bote de pintura"], correcta: 1 },
+      { universo: 3, cat: "Word", texto: "¿Qué atajo sirve para aplicar SUBRAYADO al texto seleccionado (en español)?", opciones: ["Ctrl + S", "Ctrl + U", "Ctrl + N", "Ctrl + B"], correcta: 0 },
+      { universo: 3, cat: "Word", texto: "¿Para qué sirve el botón con ícono de 'Brocha' (Copiar formato) en Word?", opciones: ["Para pintar el fondo de la hoja", "Para limpiar el documento", "Para copiar el estilo visual (color, tamaño) de un texto y pegarlo en otro", "Para subrayar de amarillo"], correcta: 2 },
+      { universo: 3, cat: "Word", texto: "Si quieres cambiar el tipo de letra (ej. de Arial a Calibri), ¿qué opción modificas?", opciones: ["El tamaño", "La Fuente", "El interlineado", "Los márgenes"], correcta: 1 },
+      { universo: 3, cat: "Paint", texto: "¿Qué programa de Windows es un editor básico para dibujar y colorear mapas de bits?", opciones: ["PowerPoint", "Notepad", "WordPad", "Paint"], correcta: 3 },
+      { universo: 3, cat: "Paint", texto: "¿Qué hace la herramienta 'Lupa' en Paint?", opciones: ["Encuentra archivos", "Acerca (zoom in) o aleja (zoom out) el área de dibujo", "Hace el texto más grande", "Limpia la imagen"], correcta: 1 },
+      { universo: 3, cat: "Word", texto: "¿Cuál es el atajo de teclado para BUSCAR una palabra específica dentro de Word (en español)?", opciones: ["Ctrl + F", "Ctrl + B", "Ctrl + S", "Ctrl + H"], correcta: 1 },
+
+      // --- UNIVERSO 4: Sistema Carmesí (Niveles 11-13) - Internet e Inteligencia Artificial ---
+      { universo: 4, cat: "Internet", texto: "¿Qué significan las siglas 'WWW' en una dirección de internet?", opciones: ["World Web Windows", "Windows World Web", "World Wide Web", "Wide Web World"], correcta: 2 },
+      { universo: 4, cat: "Internet", texto: "¿Qué tipo de programa es Google Chrome?", opciones: ["Un antivirus", "Un buscador de internet", "Un navegador web", "Un sistema operativo"], correcta: 2 },
+      { universo: 4, cat: "IA", texto: "¿Qué empresa de tecnología es la creadora principal de ChatGPT?", opciones: ["Microsoft", "Meta", "Google", "OpenAI"], correcta: 3 },
+      { universo: 4, cat: "IA", texto: "En Inteligencia Artificial, ¿qué es un 'Prompt'?", opciones: ["Un error de código", "La velocidad de respuesta", "Un tipo de voz robótica", "La instrucción o texto que le escribes a la IA para que genere algo"], correcta: 3 },
+      { universo: 4, cat: "Internet", texto: "¿Qué símbolo es estrictamente obligatorio en una dirección de correo electrónico?", opciones: ["&", "#", "@", "$"], correcta: 2 },
+      { universo: 4, cat: "Internet", texto: "¿A qué se refiere 'La Nube' (Cloud) en informática?", opciones: ["Un clima lluvioso", "Discos duros transparentes", "Servidores en internet donde puedes guardar y procesar información", "Una red social"], correcta: 2 },
+      { universo: 4, cat: "Seguridad", texto: "¿Qué es el 'Phishing'?", opciones: ["Un juego de pesca virtual", "Un antivirus gratuito", "Una técnica de engaño para robar contraseñas haciéndose pasar por empresas reales", "Una conexión rápida a internet"], correcta: 2 },
+      { universo: 4, cat: "IA", texto: "¿Qué es el 'Machine Learning' (Aprendizaje Automático)?", opciones: ["Aprender a programar desde cero", "Sistemas de IA que aprenden a identificar patrones analizando muchos datos", "Máquinas construyendo otras máquinas", "Robots estudiando en la escuela"], correcta: 1 },
+      { universo: 4, cat: "Seguridad", texto: "¿Qué significa el 'candadito' cerrado que aparece junto a la dirección (URL) en un navegador?", opciones: ["Que la página cobra por entrar", "Que la conexión entre tú y la página está cifrada (segura)", "Que la página está bloqueada", "Que la página no tiene virus"], correcta: 1 },
+      { universo: 4, cat: "Internet", texto: "¿Cuál es la diferencia entre un Navegador y un Buscador?", opciones: ["Son la misma cosa", "No hay buscadores", "El navegador se instala en tu PC (Chrome) y el buscador es una web (Google)", "El buscador es para imágenes y el navegador para texto"], correcta: 2 },
+      { universo: 4, cat: "IA", texto: "¿Qué es un 'Deepfake'?", opciones: ["Un programa para bucear", "Contenido multimedia falso (videos o audios) creado con IA que parece muy real", "Un virus de computadora", "Una contraseña indescifrable"], correcta: 1 },
+      { universo: 4, cat: "Internet", texto: "¿Qué significa 'Wi-Fi' en términos prácticos?", opciones: ["Conexión a internet mediante cables submarinos", "Tecnología para conexión de red e internet de forma inalámbrica", "Un programa para videollamadas", "Un dispositivo de almacenamiento"], correcta: 1 },
+
+      // --- UNIVERSO 5: Cúmulo Solar (Niveles 14-16) - Excel y PowerPoint ---
+      { universo: 5, cat: "Excel", texto: "En Excel, ¿qué símbolo debe escribirse obligatoriamente antes de iniciar una fórmula?", opciones: ["%", "#", "=", "@"], correcta: 2 },
+      { universo: 5, cat: "Excel", texto: "¿Cómo se le llama a la intersección o cuadro individual que forman una fila y una columna en Excel?", opciones: ["Caja", "Bloque", "Celda", "Tabla"], correcta: 2 },
+      { universo: 5, cat: "PowerPoint", texto: "En PowerPoint, ¿qué tecla de función inicia la presentación de diapositivas a pantalla completa?", opciones: ["F1", "F12", "F5", "Esc"], correcta: 2 },
+      { universo: 5, cat: "Excel", texto: "¿Cómo se identifican las columnas en una hoja de Excel?", opciones: ["Con Números (1, 2, 3...)", "Con Letras (A, B, C...)", "Con Colores", "Con Símbolos"], correcta: 1 },
+      { universo: 5, cat: "Excel", texto: "¿Qué fórmula básica usarías para sumar los valores desde A1 hasta A5?", opciones: ["=TOTAL(A1:A5)", "=ADICIONAR(A1:A5)", "=SUMA(A1:A5)", "=SUMAR.TODO(A1, A5)"], correcta: 2 },
+      { universo: 5, cat: "PowerPoint", texto: "¿Cuál es la principal diferencia entre una 'Transición' y una 'Animación'?", opciones: ["No hay diferencia", "La transición afecta el paso entre diapositivas; la animación afecta objetos dentro de la diapositiva", "La animación es para fotos, la transición para textos", "La transición requiere internet"], correcta: 1 },
+      { universo: 5, cat: "Excel", texto: "¿Cómo se identifican las filas en una hoja de Excel?", opciones: ["Con Números (1, 2, 3...)", "Con Letras (A, B, C...)", "Con Meses", "Con Puntos"], correcta: 0 },
+      { universo: 5, cat: "Excel", texto: "¿Para qué sirve el símbolo de dólar ($) en una fórmula de Excel (ej. $A$1)?", opciones: ["Para dar formato de moneda", "Para ocultar el resultado", "Para hacer una referencia 'Absoluta', es decir, fijar la celda para que no cambie al arrastrar la fórmula", "Para cobrar por la fórmula"], correcta: 2 },
+      { universo: 5, cat: "PowerPoint", texto: "¿Para qué sirve la vista 'Clasificador de diapositivas'?", opciones: ["Para borrar todas las diapositivas", "Para ver el tiempo que dura la presentación", "Para ver todas las diapositivas en miniatura y poder ordenarlas fácilmente", "Para cambiar el color de fondo"], correcta: 2 },
+      { universo: 5, cat: "Excel", texto: "¿Qué atajo de teclado se utiliza para seleccionar TODA la hoja de cálculo en Excel?", opciones: ["Ctrl + M", "Hacer clic en la esquina superior izquierda (o Ctrl + E)", "Shift + Flecha Abajo", "Alt + F4"], correcta: 1 },
+      { universo: 5, cat: "Conceptos", texto: "¿Qué programa es el estándar de la industria para crear hojas de cálculo, análisis numéricos y gráficos?", opciones: ["Microsoft Word", "Microsoft Access", "Microsoft Excel", "Adobe Photoshop"], correcta: 2 },
+      { universo: 5, cat: "PowerPoint", texto: "¿Cuál es el atajo de teclado para agregar una NUEVA diapositiva?", opciones: ["Ctrl + N", "Ctrl + D", "Ctrl + M", "Ctrl + Nueva"], correcta: 2 },
+
+      // --- UNIVERSO 6: Abismo Cuántico (Niveles 17+) - Scratch, Canva y HTML ---
+      { universo: 6, cat: "Scratch", texto: "En Scratch, ¿cuál es el evento más común que se utiliza para que inicie tu juego o animación?", opciones: ["Al hacer clic en el botón rojo", "Al tocar el borde", "Al presionar la Bandera Verde", "Al recibir un mensaje"], correcta: 2 },
+      { universo: 6, cat: "HTML", texto: "¿Qué es HTML?", opciones: ["Un programa para editar videos", "Un lenguaje de marcado utilizado para estructurar las páginas web", "Un virus informático", "Una marca de discos duros"], correcta: 1 },
+      { universo: 6, cat: "Scratch", texto: "En Scratch, ¿qué función cumple el bloque 'Por siempre' (Forever)?", opciones: ["Termina el juego", "Crea un bucle (loop) infinito que repite el código en su interior", "Guarda el proyecto", "Detiene los sonidos"], correcta: 1 },
+      { universo: 6, cat: "Canva", texto: "¿Qué es Canva?", opciones: ["Un sistema operativo para celulares", "Un lenguaje de programación avanzado", "Una plataforma en línea intuitiva para crear diseños gráficos y presentaciones", "Una marca de impresoras 3D"], correcta: 2 },
+      { universo: 6, cat: "HTML", texto: "En HTML, ¿qué etiqueta se usa para crear el encabezado o título más grande e importante?", opciones: ["<title>", "<header>", "<h1>", "<big>"], correcta: 2 },
+      { universo: 6, cat: "Programación", texto: "En programación, ¿qué es una 'Variable'?", opciones: ["Un error visual", "Un espacio en memoria para guardar un dato que puede cambiar (ej. los Puntos)", "Una contraseña para el código", "Un bloque que borra la pantalla"], correcta: 1 },
+      { universo: 6, cat: "Programación", texto: "¿Qué significa el término 'Debugging' (Depurar)?", opciones: ["Añadir más bichos al juego", "Buscar, identificar y corregir errores (bugs) en el código", "Borrar el historial de internet", "Hacer que la computadora vaya más rápido"], correcta: 1 },
+      { universo: 6, cat: "HTML", texto: "En código HTML, ¿qué etiqueta se utiliza para escribir un Párrafo de texto?", opciones: ["<p>", "<text>", "<parrafo>", "<span>"], correcta: 0 },
+      { universo: 6, cat: "Canva", texto: "En Canva, ¿qué es una 'Plantilla' (Template)?", opciones: ["La paleta de colores", "Un diseño prefabricado que puedes usar como base y editar a tu gusto", "Una forma de cobrar por el diseño", "La herramienta para recortar fotos"], correcta: 1 },
+      { universo: 6, cat: "Scratch", texto: "En Scratch, ¿de qué color son típicamente los bloques de la categoría 'Movimiento'?", opciones: ["Morado", "Amarillo", "Verde", "Azul"], correcta: 3 },
+      { universo: 6, cat: "HTML", texto: "En la estructura de una página HTML, ¿dentro de qué etiqueta va todo el contenido visible para el usuario?", opciones: ["<head>", "<visible>", "<body>", "<footer>"], correcta: 2 },
+      { universo: 6, cat: "Programación", texto: "¿Qué es un 'Algoritmo'?", opciones: ["Una fórmula secreta", "Un virus", "Una serie de pasos ordenados y lógicos para resolver un problema o tarea", "Una pieza del hardware"], correcta: 2 }
     ];
 
     let preguntasDisponibles = [];
@@ -449,6 +511,9 @@
       jugador.nombre = nombre;
       document.getElementById('btnPerfilInicio').classList.remove('hidden');
       
+      // Iniciar el banco de preguntas completo al arrancar
+      preguntasDisponibles = [...bancoPreguntas];
+      
       actualizarPerfilUI();
       prepararNivel();
     }
@@ -499,18 +564,30 @@
       mostrarPantalla('pantalla-juego');
     }
 
-    function obtenerUniversoActual() {
-      if (jugador.nivel >= 17) return { clase: 'universo-6', nombre: 'Abismo Cuántico' };
-      if (jugador.nivel >= 14) return { clase: 'universo-5', nombre: 'Cúmulo Solar' };
-      if (jugador.nivel >= 11) return { clase: 'universo-4', nombre: 'Sistema Carmesí' };
-      if (jugador.nivel >= 9) return { clase: 'universo-3', nombre: 'Sector Esmeralda' };
-      if (jugador.nivel >= 7) return { clase: 'universo-2', nombre: 'Galaxia Amatista' };
-      return { clase: 'universo-1', nombre: 'Nebulosa Nova' };
+    function obtenerNumeroUniversoActual() {
+      if (jugador.nivel >= 17) return 6;
+      if (jugador.nivel >= 14) return 5;
+      if (jugador.nivel >= 11) return 4;
+      if (jugador.nivel >= 9) return 3;
+      if (jugador.nivel >= 7) return 2;
+      return 1;
+    }
+
+    function obtenerInfoUniverso(numUniverso) {
+      switch(numUniverso) {
+        case 6: return { clase: 'universo-6', nombre: 'Abismo Cuántico' };
+        case 5: return { clase: 'universo-5', nombre: 'Cúmulo Solar' };
+        case 4: return { clase: 'universo-4', nombre: 'Sistema Carmesí' };
+        case 3: return { clase: 'universo-3', nombre: 'Sector Esmeralda' };
+        case 2: return { clase: 'universo-2', nombre: 'Galaxia Amatista' };
+        default: return { clase: 'universo-1', nombre: 'Nebulosa Nova' };
+      }
     }
 
     function actualizarUniverso() {
       document.body.className = document.body.className.replace(/universo-\d+/g, '');
-      const uni = obtenerUniversoActual();
+      const numUni = obtenerNumeroUniversoActual();
+      const uni = obtenerInfoUniverso(numUni);
       
       document.body.classList.add(uni.clase);
       document.getElementById('nombreUniversoTexto').innerText = uni.nombre;
@@ -552,35 +629,35 @@
       lanzarPregunta();
     }
 
-    /* ================= SISTEMA DE PREGUNTAS ================= */
+    /* ================= SISTEMA DE PREGUNTAS EXCLUSIVAS ================= */
     function lanzarPregunta() {
+      // 1. Prioridad: Preguntas falladas anteriormente (para reforzar aprendizaje)
       if (preguntasFalladas.length > 0 && Math.random() > 0.4) {
         preguntaActualObj = preguntasFalladas.shift();
       } else {
-        // Rellenar banco disponible si se agotó
-        if (preguntasDisponibles.length === 0) {
-          preguntasDisponibles = [...bancoPreguntas];
-        }
+        // 2. Identificar en qué Universo estamos (1 al 6)
+        const numUniversoActual = obtenerNumeroUniversoActual();
 
-        // Filtrar por nivel avanzado o no
-        let filtradas = preguntasDisponibles;
-        if (jugador.nivel < 20) {
-           filtradas = preguntasDisponibles.filter(p => !["Office", "Google Docs", "Scratch"].includes(p.cat));
-        }
+        // 3. Filtrar las preguntas disponibles SOLO para este Universo
+        let filtradas = preguntasDisponibles.filter(p => p.universo === numUniversoActual);
 
-        // Rescate: si filtramos todas las básicas y no quedan
+        // 4. Si el jugador agotó TODAS las preguntas de este Universo, recargamos SOLO las de este universo
         if (filtradas.length === 0) {
-           preguntasDisponibles = [...bancoPreguntas];
-           filtradas = preguntasDisponibles.filter(p => !["Office", "Google Docs", "Scratch"].includes(p.cat));
+           const preguntasDelUniversoOriginal = bancoPreguntas.filter(p => p.universo === numUniversoActual);
+           // Añadir de nuevo a las disponibles
+           preguntasDisponibles = [...preguntasDisponibles, ...preguntasDelUniversoOriginal];
+           filtradas = preguntasDelUniversoOriginal;
         }
 
+        // 5. Elegir una pregunta aleatoria de las filtradas
         const idxRandom = Math.floor(Math.random() * filtradas.length);
         preguntaActualObj = filtradas[idxRandom];
 
-        // Eliminar del banco disponible para no repetir
+        // 6. Eliminarla del banco disponible para que no se repita
         preguntasDisponibles = preguntasDisponibles.filter(p => p.texto !== preguntaActualObj.texto);
       }
 
+      // Preparar Modal UI
       document.getElementById('categoriaPregunta').innerText = preguntaActualObj.cat;
       document.getElementById('textoPregunta').innerText = preguntaActualObj.texto;
       document.getElementById('mensajePregunta').classList.add('hidden');
