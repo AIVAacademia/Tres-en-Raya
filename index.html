@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Academia AIVA - Tres en Raya</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Animaciones personalizadas */
+    .fade-in { animation: fadeIn 0.5s ease-in-out; }
+    .slide-up { animation: slideUp 0.4s ease-out; }
+    .pop-in { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+    /* Estilos del tablero */
+    .cell {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+    .cell:hover {
+      background: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    }
+    .piece-x { color: #FF4742; text-shadow: 0 0 10px rgba(255, 71, 66, 0.8); }
+    .piece-o { color: #2EE59D; text-shadow: 0 0 10px rgba(46, 229, 157, 0.8); }
+
+    /* Universos (Fondos dinámicos) */
+    .universo-1 { background: linear-gradient(135deg, #1e3a8a, #3b82f6); } /* Azul */
+    .universo-2 { background: linear-gradient(135deg, #4c1d95, #8b5cf6); } /* Morado */
+    .universo-3 { background: linear-gradient(135deg, #064e3b, #10b981); } /* Verde */
+    .universo-4 { background: linear-gradient(135deg, #7f1d1d, #ef4444); } /* Rojo */
+    .universo-5 { background: linear-gradient(135deg, #78350f, #f59e0b); } /* Naranja */
+    .universo-6 { background: linear-gradient(135deg, #171717, #525252); } /* Oscuro / Avanzado */
+
+    /* Glassmorphism general */
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body class="universo-1 text-white min-h-screen flex items-center justify-center transition-colors duration-1000">
+
+  <!-- ================= PANTALLA DE INICIO ================= -->
+  <div id="pantalla-inicio" class="glass-panel p-8 rounded-3xl text-center max-w-md w-full mx-4 fade-in">
+    <div class="mb-6">
+      <h1 class="text-4xl font-extrabold mb-2 tracking-tight">Academia <span class="text-blue-300">AIVA</span></h1>
+      <p class="text-sm opacity-80">Juego Educativo de Tres en Raya</p>
+    </div>
+    <div class="space-y-4">
+      <input type="text" id="nombreJugador" placeholder="Ingresa tu nombre" class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-400 text-white placeholder-white/50 text-center text-lg">
+      <button onclick="iniciarJuego()" class="w-full py-3 bg-blue-500 hover:bg-blue-600 rounded-xl font-bold transition-transform transform hover:scale-105 shadow-lg">Iniciar Aventura</button>
+      <div class="flex gap-2">
+        <button onclick="mostrarPantalla('pantalla-instrucciones')" class="flex-1 py-2 bg-white/20 hover:bg-white/30 rounded-xl font-semibold transition-colors">Instrucciones</button>
+        <button onclick="mostrarPantalla('pantalla-perfil')" class="flex-1 py-2 bg-purple-500 hover:bg-purple-600 rounded-xl font-semibold transition-colors hidden" id="btnPerfilInicio">Mi Perfil</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= INSTRUCCIONES ================= -->
+  <div id="pantalla-instrucciones" class="glass-panel p-8 rounded-3xl max-w-md w-full mx-4 hidden slide-up relative">
+    <h2 class="text-2xl font-bold mb-4 text-center">Instrucciones</h2>
+    <ul class="list-disc list-inside space-y-2 text-sm opacity-90 mb-6">
+      <li>Juegas contra la Inteligencia Artificial de AIVA.</li>
+      <li>Para colocar una ficha, debes responder correctamente a una pregunta.</li>
+      <li>Tienes 60 segundos por pregunta. Puedes pedir +30s una vez por turno.</li>
+      <li>Si fallas, pierdes el turno y la pregunta se repetirá más adelante.</li>
+      <li>¡Avanza de nivel, descubre nuevos universos y obtén logros!</li>
+    </ul>
+    <button onclick="mostrarPantalla('pantalla-inicio')" class="w-full py-3 bg-white/20 hover:bg-white/30 rounded-xl font-bold transition-colors">Volver</button>
+  </div>
+
+  <!-- ================= TABLERO DE JUEGO ================= -->
+  <div id="pantalla-juego" class="w-full max-w-lg mx-4 hidden fade-in flex flex-col items-center">
+    
+    <!-- Header Juego -->
+    <div class="w-full flex justify-between items-center mb-6 glass-panel px-6 py-3 rounded-2xl">
+      <div>
+        <h2 id="nivelActualTexto" class="text-xl font-bold text-yellow-300">Nivel 1</h2>
+        <p id="jugadorActualTexto" class="text-sm opacity-80">Jugador</p>
+      </div>
+      <div class="flex gap-2 items-center">
+        <!-- Temporizador Global en el Tablero -->
+        <div class="flex items-center gap-1 text-xl font-mono font-bold bg-white/10 px-3 py-1 rounded-lg mr-2">
+          <svg id="iconoTiempoGlobal" class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg>
+          <span id="tiempoGlobal" class="text-yellow-400">120</span>s
+        </div>
+        <button onclick="pausarJuego()" class="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors" title="Pausar">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </button>
+        <button onclick="mostrarPantalla('pantalla-perfil')" class="p-2 bg-purple-500 hover:bg-purple-600 rounded-lg transition-colors" title="Perfil">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Indicador de Turno -->
+    <div id="indicadorTurno" class="text-lg font-semibold mb-4 text-center h-8">
+      Tu turno. Selecciona una casilla.
+    </div>
+
+    <!-- Grid 3x3 -->
+    <div class="grid grid-cols-3 gap-3 w-full max-w-[350px] aspect-square mx-auto mb-6" id="tablero-grid">
+      <!-- Casillas generadas por JS -->
+    </div>
+
+    <button onclick="reiniciarPartida()" class="px-6 py-2 bg-red-500 hover:bg-red-600 rounded-xl font-bold transition-colors">Rendirse</button>
+  </div>
+
+  <!-- ================= MODAL PREGUNTA ================= -->
+  <div id="modal-pregunta" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 hidden opacity-0 transition-opacity duration-300">
+    <div class="glass-panel p-6 rounded-3xl max-w-md w-full transform scale-95 transition-transform duration-300" id="modal-pregunta-content">
+      <div class="flex justify-between items-center mb-4">
+        <span class="text-sm font-bold bg-blue-500 px-3 py-1 rounded-full" id="categoriaPregunta">Categoría</span>
+        <div class="flex items-center gap-2 text-xl font-mono font-bold">
+          <svg id="iconoTiempoPregunta" class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg>
+          <span id="tiempoPregunta" class="text-yellow-400">120</span>s
+          <button onclick="pausarJuego()" class="ml-2 p-1.5 bg-white/20 hover:bg-white/30 rounded-lg transition-colors cursor-pointer" title="Pausar Tiempo">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          </button>
+        </div>
+      </div>
+      
+      <h3 id="textoPregunta" class="text-lg font-semibold mb-6">¿Pregunta?</h3>
+      
+      <div id="opcionesPregunta" class="space-y-3 mb-6">
+        <!-- Opciones generadas por JS -->
+      </div>
+
+      <div class="flex justify-between items-center">
+        <button id="btnTiempoExtra" onclick="pedirTiempoExtra()" class="text-sm bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-4 rounded-lg transition-colors">+30s Extra</button>
+        <span id="mensajePregunta" class="text-sm font-bold hidden"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL PAUSA ================= -->
+  <div id="modal-pausa" class="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-[60] hidden opacity-0 transition-opacity duration-300">
+    <div class="glass-panel p-8 rounded-3xl text-center max-w-sm w-full transform scale-95 transition-transform duration-300">
+      <h2 class="text-3xl font-bold mb-4 text-white">Juego Pausado</h2>
+      <p class="text-sm opacity-80 mb-6">El temporizador ha sido detenido.</p>
+      <button onclick="reanudarJuego()" class="w-full py-3 bg-blue-500 hover:bg-blue-600 rounded-xl font-bold transition-colors shadow-lg">Reanudar Partida</button>
+    </div>
+  </div>
+
+  <!-- ================= INTERLUDIO ================= -->
+  <div id="pantalla-interludio" class="glass-panel p-8 rounded-3xl max-w-md w-full mx-4 hidden text-center">
+    <h2 class="text-3xl font-bold mb-2 text-yellow-300" id="tituloInterludio">¡Nivel Completado!</h2>
+    <div class="my-6 p-6 bg-white/10 rounded-2xl border border-white/20">
+      <h3 class="font-bold text-blue-300 mb-2 flex items-center justify-center gap-2">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        ¿Sabías que...?
+      </h3>
+      <p id="textoSabiasQue" class="text-sm leading-relaxed"></p>
+    </div>
+    <div class="space-y-3">
+      <button onclick="avanzarNivel()" class="w-full py-3 bg-green-500 hover:bg-green-600 rounded-xl font-bold transition-transform transform hover:scale-105 shadow-lg">Siguiente Nivel</button>
+      <button onclick="descargarLogrosFHD()" class="w-full py-3 bg-blue-500 hover:bg-blue-600 rounded-xl font-bold transition-colors flex justify-center items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+        Descargar Certificado
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= PERFIL DEL JUGADOR ================= -->
+  <div id="pantalla-perfil" class="glass-panel p-8 rounded-3xl max-w-md w-full mx-4 hidden slide-up">
+    <h2 class="text-2xl font-bold mb-6 text-center">Perfil de <span id="perfilNombre" class="text-blue-300"></span></h2>
+    
+    <div class="grid grid-cols-3 gap-2 mb-6 text-center">
+      <div class="bg-white/10 p-3 rounded-xl">
+        <p class="text-xs opacity-70">Nivel</p>
+        <p class="text-xl font-bold text-yellow-300" id="perfilNivel">1</p>
+      </div>
+      <div class="bg-white/10 p-3 rounded-xl">
+        <p class="text-xs opacity-70">Puntos</p>
+        <p class="text-xl font-bold text-blue-400" id="perfilPuntos">0</p>
+      </div>
+      <div class="bg-white/10 p-3 rounded-xl">
+        <p class="text-xs opacity-70">Victorias</p>
+        <p class="text-xl font-bold text-green-400" id="perfilVictorias">0</p>
+      </div>
+    </div>
+
+    <div class="mb-6">
+      <h3 class="font-semibold mb-2">Logros Desbloqueados:</h3>
+      <div id="listaLogros" class="space-y-2 text-sm opacity-90 max-h-32 overflow-y-auto pr-2">
+        <!-- Logros JS -->
+      </div>
+    </div>
+
+    <div class="space-y-3">
+      <button onclick="descargarLogrosFHD()" class="w-full py-3 bg-blue-500 hover:bg-blue-600 rounded-xl font-bold transition-colors flex justify-center items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+        Descargar Imagen (FHD)
+      </button>
+      <button onclick="volverAlJuego()" class="w-full py-3 bg-white/20 hover:bg-white/30 rounded-xl font-bold transition-colors">Cerrar</button>
+    </div>
+  </div>
+
+  <script>
+    /* ================= ESTADO DEL JUEGO ================= */
+    let jugador = {
+      nombre: '',
+      nivel: 1,
+      victorias: 0,
+      derrotas: 0,
+      puntos: 0,
+      logros: ["Iniciando la Aventura"]
+    };
+
+    let estadoPartida = {
+      tablero: Array(9).fill(null),
+      turno: 'X', // 'X' es jugador, 'O' es máquina
+      enJuego: false,
+      casillaSeleccionada: null
+    };
+
+    let timerInterval = null;
+    let tiempoRestante = 120;
+    let tiempoExtraUsado = false;
+    let preguntasFalladas = [];
+    let preguntaActualObj = null;
+
+    /* ================= BANCO DE PREGUNTAS ================= */
+    const bancoPreguntas = [
+      // Básicas (Niveles 1-19)
+      { cat: "IA", texto: "¿Qué significa 'IA'?", opciones: ["Internet Avanzado", "Inteligencia Artificial", "Interfaz Activa", "Intercambio Anónimo"], correcta: 1 },
+      { cat: "Windows", texto: "¿Cuál es el atajo de teclado para COPIAR en Windows?", opciones: ["Ctrl + C", "Ctrl + V", "Ctrl + X", "Ctrl + P"], correcta: 0 },
+      { cat: "Internet", texto: "¿Qué significa 'WWW'?", opciones: ["World Wide Web", "World Web Windows", "Wide Web World", "Windows World Web"], correcta: 0 },
+      { cat: "IA", texto: "¿Qué es ChatGPT?", opciones: ["Un antivirus", "Un modelo de lenguaje de IA", "Un sistema operativo", "Un navegador web"], correcta: 1 },
+      { cat: "Hardware", texto: "¿Qué componente se considera el 'cerebro' de la computadora?", opciones: ["El Disco Duro", "La Memoria RAM", "La CPU (Procesador)", "La Tarjeta Gráfica"], correcta: 2 },
+      { cat: "Internet", texto: "¿Cuál de estos NO es un navegador web?", opciones: ["Chrome", "Firefox", "Linux", "Edge"], correcta: 2 },
+      { cat: "Windows", texto: "¿Qué tecla se usa comúnmente para acceder a la ayuda en la mayoría de programas?", opciones: ["F1", "F5", "Esc", "Enter"], correcta: 0 },
+      { cat: "Software", texto: "¿Qué tipo de programa es Microsoft Word?", opciones: ["Hoja de cálculo", "Procesador de texto", "Navegador", "Antivirus"], correcta: 1 },
+      
+      // Avanzadas (Nivel 20+)
+      { cat: "Office", texto: "¿Qué fórmula de Excel suma un rango de celdas?", opciones: ["=SUMAR()", "=TOTAL()", "=SUMA()", "=ADICION()"], correcta: 2 },
+      { cat: "Google Docs", texto: "¿Cómo se llama la alternativa de Google a Microsoft Excel?", opciones: ["Google Pages", "Google Sheets", "Google Slides", "Google Numbers"], correcta: 1 },
+      { cat: "Scratch", texto: "¿Qué tipo de interfaz utiliza Scratch para programar?", opciones: ["Código escrito en C++", "Bloques visuales que encajan", "Línea de comandos pura", "Solo voz"], correcta: 1 },
+      { cat: "IA", texto: "¿Qué es el 'Machine Learning'?", opciones: ["Máquinas construyendo máquinas", "Una rama de la IA donde los sistemas aprenden de datos", "Aprender a reparar hardware", "Un nuevo sistema operativo"], correcta: 1 }
+    ];
+
+    const sabiasQue = [
+      "El primer virus informático se llamó 'Creeper' y fue creado en 1971.",
+      "El primer ratón de computadora fue inventado en 1964 y estaba hecho de madera.",
+      "La contraseña más utilizada en el mundo sigue siendo '123456'. ¡No la uses!",
+      "El dominio más antiguo de Internet registrado es symbolics.com (1985).",
+      "La Inteligencia Artificial ya era un concepto discutido por Alan Turing en 1950.",
+      "Cada día se envían aproximadamente 300 mil millones de correos electrónicos en el mundo."
+    ];
+
+    /* ================= FUNCIONES DE UI Y PAUSA ================= */
+    let juegoPausado = false;
+
+    function pausarJuego() {
+      // Evitar pausar si no estamos jugando o si no hay modal abierto
+      if (!estadoPartida.enJuego && document.getElementById('modal-pregunta').classList.contains('hidden')) return;
+      
+      juegoPausado = true;
+      clearInterval(timerInterval); // Congelar el reloj
+      
+      const modalPausa = document.getElementById('modal-pausa');
+      modalPausa.classList.remove('hidden');
+      setTimeout(() => {
+        modalPausa.classList.remove('opacity-0');
+        modalPausa.firstElementChild.classList.remove('scale-95');
+        modalPausa.firstElementChild.classList.add('scale-100');
+      }, 10);
+    }
+
+    function reanudarJuego() {
+      juegoPausado = false;
+      const modalPausa = document.getElementById('modal-pausa');
+      modalPausa.classList.add('opacity-0');
+      modalPausa.firstElementChild.classList.remove('scale-100');
+      modalPausa.firstElementChild.classList.add('scale-95');
+      
+      setTimeout(() => modalPausa.classList.add('hidden'), 300);
+      
+      // Reanudar el temporizador global siempre y cuando sigamos en juego
+      if (estadoPartida.enJuego && tiempoRestante > 0) {
+        timerInterval = setInterval(tickTemporizador, 1000);
+      }
+    }
+
+    function mostrarPantalla(idPantalla) {
+      document.querySelectorAll('body > div').forEach(div => {
+        if(div.id) div.classList.add('hidden');
+      });
+      document.getElementById(idPantalla).classList.remove('hidden');
+    }
+
+    /* ================= LÓGICA DE INICIO Y PERFIL ================= */
+    function iniciarJuego() {
+      const nombre = document.getElementById('nombreJugador').value.trim();
+      if (!nombre) {
+        alert("Por favor, ingresa tu nombre para continuar."); // Simple fallback, though modal is better
+        return;
+      }
+      jugador.nombre = nombre;
+      document.getElementById('btnPerfilInicio').classList.remove('hidden');
+      
+      actualizarPerfilUI();
+      prepararNivel();
+    }
+
+    function actualizarPerfilUI() {
+      document.getElementById('perfilNombre').innerText = jugador.nombre;
+      document.getElementById('perfilNivel').innerText = jugador.nivel;
+      document.getElementById('perfilPuntos').innerText = jugador.puntos;
+      document.getElementById('perfilVictorias').innerText = jugador.victorias;
+      
+      // Actualizar información en el header del tablero
+      document.getElementById('jugadorActualTexto').innerText = `${jugador.nombre} | ${jugador.puntos} pts`;
+      
+      const listaLogros = document.getElementById('listaLogros');
+      listaLogros.innerHTML = '';
+      jugador.logros.forEach(logro => {
+        listaLogros.innerHTML += `<div class="bg-white/10 p-2 rounded flex items-center gap-2"><span class="text-yellow-400">★</span> ${logro}</div>`;
+      });
+    }
+
+    function volverAlJuego() {
+      if (estadoPartida.enJuego) {
+        mostrarPantalla('pantalla-juego');
+      } else {
+        mostrarPantalla('pantalla-inicio');
+      }
+    }
+
+    /* ================= LÓGICA DEL JUEGO (TRES EN RAYA) ================= */
+    function prepararNivel() {
+      estadoPartida.tablero = Array(9).fill(null);
+      estadoPartida.turno = 'X';
+      estadoPartida.enJuego = true;
+      
+      // Reiniciar temporizador global a 120s por nivel
+      tiempoRestante = 120;
+      tiempoExtraUsado = false;
+      document.getElementById('btnTiempoExtra').disabled = false;
+      document.getElementById('btnTiempoExtra').classList.remove('opacity-50', 'cursor-not-allowed');
+      actualizarReloj();
+      clearInterval(timerInterval);
+      timerInterval = setInterval(tickTemporizador, 1000);
+      
+      // Actualizar UI
+      document.getElementById('nivelActualTexto').innerText = `Nivel ${jugador.nivel}`;
+      document.getElementById('indicadorTurno').innerText = "Tu turno. Selecciona una casilla.";
+      document.getElementById('indicadorTurno').className = "text-lg font-semibold mb-4 text-center h-8 text-blue-300 fade-in";
+      
+      actualizarUniverso();
+      renderizarTablero();
+      mostrarPantalla('pantalla-juego');
+    }
+
+    function actualizarUniverso() {
+      // Remover clases de universo actuales
+      document.body.className = document.body.className.replace(/universo-\d+/g, '');
+      
+      // Lógica de cambio de universo según nivel
+      let numUniverso = 1;
+      if (jugador.nivel >= 7 && jugador.nivel < 9) numUniverso = 2;
+      else if (jugador.nivel >= 9 && jugador.nivel < 11) numUniverso = 3;
+      else if (jugador.nivel >= 11 && jugador.nivel < 14) numUniverso = 4;
+      else if (jugador.nivel >= 14 && jugador.nivel < 17) numUniverso = 5;
+      else if (jugador.nivel >= 17) numUniverso = 6;
+
+      document.body.classList.add(`universo-${numUniverso}`);
+    }
+
+    function renderizarTablero() {
+      const grid = document.getElementById('tablero-grid');
+      grid.innerHTML = '';
+      
+      // Personalización de fichas (Nivel 5+)
+      let iconoX = "X";
+      let iconoO = "O";
+      if (jugador.nivel >= 5) {
+        iconoX = "🚀"; // Cohete para el jugador
+        iconoO = "👾"; // Alien para la IA
+      }
+
+      for (let i = 0; i < 9; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell flex items-center justify-center text-5xl font-extrabold rounded-2xl cursor-pointer shadow-inner';
+        
+        if (estadoPartida.tablero[i] === 'X') {
+          cell.innerHTML = `<span class="pop-in piece-x">${iconoX}</span>`;
+          cell.classList.remove('cursor-pointer');
+        } else if (estadoPartida.tablero[i] === 'O') {
+          cell.innerHTML = `<span class="pop-in piece-o">${iconoO}</span>`;
+          cell.classList.remove('cursor-pointer');
+        } else {
+          cell.onclick = () => seleccionarCasilla(i);
+        }
+        
+        grid.appendChild(cell);
+      }
+    }
+
+    function seleccionarCasilla(index) {
+      if (!estadoPartida.enJuego || estadoPartida.tablero[index] !== null || estadoPartida.turno !== 'X') return;
+      
+      estadoPartida.casillaSeleccionada = index;
+      lanzarPregunta();
+    }
+
+    /* ================= SISTEMA DE PREGUNTAS ================= */
+    function lanzarPregunta() {
+      // Elegir pregunta (priorizar falladas)
+      if (preguntasFalladas.length > 0 && Math.random() > 0.5) {
+        preguntaActualObj = preguntasFalladas.shift();
+      } else {
+        // Filtrar avanzadas si nivel < 20
+        let disponibles = bancoPreguntas;
+        if (jugador.nivel < 20) {
+           disponibles = bancoPreguntas.filter(p => !["Office", "Google Docs", "Scratch"].includes(p.cat));
+        }
+        preguntaActualObj = disponibles[Math.floor(Math.random() * disponibles.length)];
+      }
+
+      // Preparar UI
+      document.getElementById('categoriaPregunta').innerText = preguntaActualObj.cat;
+      document.getElementById('textoPregunta').innerText = preguntaActualObj.texto;
+      document.getElementById('mensajePregunta').classList.add('hidden');
+      
+      const contenedorOpciones = document.getElementById('opcionesPregunta');
+      contenedorOpciones.innerHTML = '';
+      
+      preguntaActualObj.opciones.forEach((opcion, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'w-full text-left p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-colors border border-white/10';
+        btn.innerText = opcion;
+        btn.onclick = () => responderPregunta(idx, btn);
+        contenedorOpciones.appendChild(btn);
+      });
+
+      // Ya no reiniciamos el tiempo aquí, es un tiempo global.
+      actualizarReloj();
+
+      // Mostrar Modal
+      const modal = document.getElementById('modal-pregunta');
+      modal.classList.remove('hidden');
+      setTimeout(() => modal.classList.remove('opacity-0'), 10);
+    }
+
+    function tickTemporizador() {
+      if (!estadoPartida.enJuego) return;
+      
+      tiempoRestante--;
+      actualizarReloj();
+      
+      if (tiempoRestante <= 0) {
+        clearInterval(timerInterval);
+        estadoPartida.enJuego = false;
+        cerrarModalPregunta();
+        manejarDerrota(true); // Pasar un flag indicando que fue por tiempo
+      }
+    }
+
+    function actualizarReloj() {
+      // Sincronizar UI de ambos relojes (Tablero y Modal)
+      const elTiempoGlobal = document.getElementById('tiempoGlobal');
+      const elIconoGlobal = document.getElementById('iconoTiempoGlobal');
+      const elTiempoPregunta = document.getElementById('tiempoPregunta');
+      const elIconoPregunta = document.getElementById('iconoTiempoPregunta');
+
+      elTiempoGlobal.innerText = tiempoRestante;
+      elTiempoPregunta.innerText = tiempoRestante;
+
+      if (tiempoRestante <= 15) {
+        elTiempoGlobal.classList.replace('text-yellow-400', 'text-red-500');
+        elIconoGlobal.classList.replace('text-yellow-400', 'text-red-500');
+        elTiempoPregunta.classList.replace('text-yellow-400', 'text-red-500');
+        elIconoPregunta.classList.replace('text-yellow-400', 'text-red-500');
+      } else {
+        elTiempoGlobal.classList.replace('text-red-500', 'text-yellow-400');
+        elIconoGlobal.classList.replace('text-red-500', 'text-yellow-400');
+        elTiempoPregunta.classList.replace('text-red-500', 'text-yellow-400');
+        elIconoPregunta.classList.replace('text-red-500', 'text-yellow-400');
+      }
+    }
+
+    function pedirTiempoExtra() {
+      if (!tiempoExtraUsado) {
+        tiempoRestante += 30;
+        tiempoExtraUsado = true;
+        actualizarReloj();
+        const btn = document.getElementById('btnTiempoExtra');
+        btn.disabled = true;
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+      }
+    }
+
+    function responderPregunta(idxSeleccionado, btnElement) {
+      // Ya NO detenemos el tiempo global al responder, el tiempo sigue corriendo en el turno de la IA
+      
+      // Deshabilitar botones
+      const botones = document.getElementById('opcionesPregunta').querySelectorAll('button');
+      botones.forEach(b => b.disabled = true);
+
+      const esCorrecta = (idxSeleccionado === preguntaActualObj.correcta);
+      
+      if (esCorrecta) {
+        btnElement.classList.replace('bg-white/10', 'bg-green-500');
+        btnElement.classList.replace('hover:bg-white/20', 'hover:bg-green-600');
+      } else {
+        btnElement.classList.replace('bg-white/10', 'bg-red-500');
+        btnElement.classList.replace('hover:bg-white/20', 'hover:bg-red-600');
+        // Resaltar correcta
+        botones[preguntaActualObj.correcta].classList.replace('bg-white/10', 'bg-green-500');
+      }
+
+      setTimeout(() => manejarRespuesta(esCorrecta), 1500);
+    }
+
+    function manejarRespuesta(esCorrecta) {
+      if (!estadoPartida.enJuego) return; // Por si se acabó el tiempo durante la animación
+
+      cerrarModalPregunta();
+
+      if (esCorrecta) {
+        // Colocar ficha
+        estadoPartida.tablero[estadoPartida.casillaSeleccionada] = 'X';
+        renderizarTablero();
+        
+        if (!verificarFinJuego('X')) {
+          estadoPartida.turno = 'O';
+          document.getElementById('indicadorTurno').innerText = "Turno de AIVA (IA)...";
+          document.getElementById('indicadorTurno').className = "text-lg font-semibold mb-4 text-center h-8 text-red-300 fade-in";
+          setTimeout(turnoMaquina, 1000);
+        }
+      } else {
+        // Falló
+        preguntasFalladas.push(preguntaActualObj);
+        document.getElementById('indicadorTurno').innerText = "¡Fallaste! Pierdes el turno. Turno de AIVA...";
+        document.getElementById('indicadorTurno').className = "text-lg font-semibold mb-4 text-center h-8 text-red-400 fade-in";
+        estadoPartida.turno = 'O';
+        setTimeout(turnoMaquina, 2000);
+      }
+    }
+
+    function cerrarModalPregunta() {
+      const modal = document.getElementById('modal-pregunta');
+      modal.classList.add('opacity-0');
+      setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+
+    /* ================= IA DE LA MÁQUINA ================= */
+    function turnoMaquina() {
+      if (!estadoPartida.enJuego) return;
+
+      const celdasVacias = estadoPartida.tablero.map((val, idx) => val === null ? idx : null).filter(val => val !== null);
+      if (celdasVacias.length === 0) return;
+
+      // Lógica simple: Intentar ganar, intentar bloquear, o aleatorio
+      let casillaElegida = -1;
+
+      // 1. Intentar ganar
+      casillaElegida = buscarMovimientoGanador('O');
+      
+      // 2. Intentar bloquear a X
+      if (casillaElegida === -1) {
+        casillaElegida = buscarMovimientoGanador('X');
+      }
+
+      // 3. Aleatorio
+      if (casillaElegida === -1) {
+        casillaElegida = celdasVacias[Math.floor(Math.random() * celdasVacias.length)];
+      }
+
+      estadoPartida.tablero[casillaElegida] = 'O';
+      renderizarTablero();
+
+      if (!verificarFinJuego('O')) {
+        estadoPartida.turno = 'X';
+        document.getElementById('indicadorTurno').innerText = "Tu turno. Selecciona una casilla.";
+        document.getElementById('indicadorTurno').className = "text-lg font-semibold mb-4 text-center h-8 text-blue-300 fade-in";
+      }
+    }
+
+    function buscarMovimientoGanador(jugadorFicha) {
+      const combinaciones = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8], // Horizontales
+        [0, 3, 6], [1, 4, 7], [2, 5, 8], // Verticales
+        [0, 4, 8], [2, 4, 6]             // Diagonales
+      ];
+
+      for (let combo of combinaciones) {
+        const [a, b, c] = combo;
+        const valores = [estadoPartida.tablero[a], estadoPartida.tablero[b], estadoPartida.tablero[c]];
+        const cantidadFicha = valores.filter(v => v === jugadorFicha).length;
+        const cantidadVacia = valores.filter(v => v === null).length;
+
+        if (cantidadFicha === 2 && cantidadVacia === 1) {
+          return combo[valores.indexOf(null)];
+        }
+      }
+      return -1;
+    }
+
+    /* ================= VERIFICAR VICTORIA/EMPATE ================= */
+    function verificarFinJuego(jugadorFicha) {
+      const combinaciones = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
+      ];
+
+      const victoria = combinaciones.some(combo => {
+        return combo.every(idx => estadoPartida.tablero[idx] === jugadorFicha);
+      });
+
+      if (victoria) {
+        clearInterval(timerInterval); // Detener tiempo al ganar o perder
+        estadoPartida.enJuego = false;
+        if (jugadorFicha === 'X') {
+          manejarVictoria();
+        } else {
+          manejarDerrota();
+        }
+        return true;
+      }
+
+      if (!estadoPartida.tablero.includes(null)) {
+        clearInterval(timerInterval); // Detener tiempo al empatar
+        estadoPartida.enJuego = false;
+        manejarEmpate();
+        return true;
+      }
+
+      return false;
+    }
+
+    function manejarVictoria() {
+      jugador.victorias++;
+      jugador.puntos += 3;
+      verificarLogros();
+      actualizarPerfilUI();
+      
+      document.getElementById('indicadorTurno').innerText = "¡Ganaste el Nivel!";
+      document.getElementById('indicadorTurno').className = "text-xl font-bold mb-4 text-center h-8 text-green-400 pop-in";
+      
+      setTimeout(() => {
+        document.getElementById('tituloInterludio').innerText = `¡Nivel ${jugador.nivel} Completado! (+3 pts)`;
+        document.getElementById('tituloInterludio').className = "text-3xl font-bold mb-2 text-green-400";
+        document.getElementById('textoSabiasQue').innerText = sabiasQue[Math.floor(Math.random() * sabiasQue.length)];
+        
+        // Restaurar el botón original
+        const btnSiguiente = document.querySelector('#pantalla-interludio button[onclick="avanzarNivel()"]');
+        if(btnSiguiente) {
+          btnSiguiente.innerText = "Siguiente Nivel";
+          btnSiguiente.onclick = avanzarNivel;
+        }
+
+        mostrarPantalla('pantalla-interludio');
+      }, 3000); // Aumentado a 3 segundos para que aprecie su jugada ganadora
+    }
+
+    function manejarDerrota(porTiempo = false) {
+      jugador.derrotas++;
+      actualizarPerfilUI();
+
+      if (porTiempo) {
+        document.getElementById('indicadorTurno').innerText = "¡Se acabó el tiempo!";
+      } else {
+        document.getElementById('indicadorTurno').innerText = "AIVA ha ganado esta vez...";
+      }
+      document.getElementById('indicadorTurno').className = "text-xl font-bold mb-4 text-center h-8 text-red-500 pop-in";
+      
+      setTimeout(() => {
+        document.getElementById('tituloInterludio').innerText = porTiempo ? "¡Tiempo Agotado! (+0 pts)" : "Inténtalo de nuevo (+0 pts)";
+        document.getElementById('tituloInterludio').className = "text-3xl font-bold mb-2 text-red-500";
+        document.getElementById('textoSabiasQue').innerText = sabiasQue[Math.floor(Math.random() * sabiasQue.length)];
+        
+        // Cambiar botón a "Reintentar Nivel"
+        const btnSiguiente = document.querySelector('#pantalla-interludio button[onclick="avanzarNivel()"]') || document.querySelector('#pantalla-interludio button[onclick="reintentarNivel()"]');
+        if(btnSiguiente) {
+          btnSiguiente.innerText = "Reintentar Nivel";
+          btnSiguiente.onclick = reintentarNivel;
+        }
+
+        mostrarPantalla('pantalla-interludio');
+      }, 3000); // Aumentado a 3 segundos
+    }
+
+    function manejarEmpate() {
+      jugador.puntos += 1;
+      actualizarPerfilUI();
+
+      document.getElementById('indicadorTurno').innerText = "¡Empate!";
+      document.getElementById('indicadorTurno').className = "text-xl font-bold mb-4 text-center h-8 text-yellow-400 pop-in";
+      
+      setTimeout(() => {
+        document.getElementById('tituloInterludio').innerText = `Un combate reñido (+1 pt)`;
+        document.getElementById('tituloInterludio').className = "text-3xl font-bold mb-2 text-yellow-400";
+        document.getElementById('textoSabiasQue').innerText = sabiasQue[Math.floor(Math.random() * sabiasQue.length)];
+        
+        // Cambiar botón a "Reintentar Nivel"
+        const btnSiguiente = document.querySelector('#pantalla-interludio button[onclick="avanzarNivel()"]') || document.querySelector('#pantalla-interludio button[onclick="reintentarNivel()"]');
+        if(btnSiguiente) {
+          btnSiguiente.innerText = "Reintentar Nivel";
+          btnSiguiente.onclick = reintentarNivel;
+        }
+
+        mostrarPantalla('pantalla-interludio');
+      }, 3000); // Aumentado a 3 segundos
+    }
+
+    function avanzarNivel() {
+      jugador.nivel++;
+      // Restaurar el botón original por si viene de una derrota/empate
+      const btnSiguiente = document.querySelector('#pantalla-interludio button');
+      btnSiguiente.innerText = "Siguiente Nivel";
+      btnSiguiente.onclick = avanzarNivel;
+      
+      actualizarPerfilUI();
+      prepararNivel();
+    }
+
+    function reintentarNivel() {
+      // Restaurar el botón
+      const btnSiguiente = document.querySelector('#pantalla-interludio button');
+      btnSiguiente.innerText = "Siguiente Nivel";
+      btnSiguiente.onclick = avanzarNivel;
+      
+      prepararNivel();
+    }
+
+    function reiniciarPartida() {
+      mostrarPantalla('pantalla-inicio');
+    }
+
+    /* ================= LOGROS ================= */
+    function verificarLogros() {
+      const añadirLogro = (nombre) => {
+        if (!jugador.logros.includes(nombre)) {
+          jugador.logros.push(nombre);
+        }
+      };
+
+      if (jugador.victorias >= 1) añadirLogro("Primera Victoria");
+      if (jugador.victorias >= 5) añadirLogro("Racha Imparable (5)");
+      if (jugador.nivel >= 5) añadirLogro("Explorador de Universos (Nvl 5)");
+      if (jugador.nivel >= 20) añadirLogro("Maestro AIVA (Nvl 20)");
+    }
+
+    /* ================= DESCARGA FHD (<canvas>) ================= */
+    function descargarLogrosFHD() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1920;
+      canvas.height = 1080;
+      const ctx = canvas.getContext('2d');
+
+      // Determinar qué íconos usa el jugador actualmente
+      let iconoX = "X";
+      let iconoO = "O";
+      if (jugador.nivel >= 5) {
+        iconoX = "🚀";
+        iconoO = "👾";
+      }
+
+      // 1. Fondo (Deep Space / Degradado agradable)
+      const gradiente = ctx.createLinearGradient(0, 0, 1920, 1080);
+      gradiente.addColorStop(0, '#0f172a'); // Azul oscuro
+      gradiente.addColorStop(1, '#3b0764'); // Púrpura oscuro
+      ctx.fillStyle = gradiente;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 2. Efecto de Estrellas de fondo
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      for(let i = 0; i < 150; i++) {
+        ctx.beginPath();
+        ctx.arc(Math.random() * 1920, Math.random() * 1080, Math.random() * 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Configuraciones de texto generales
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // ==========================================
+      // SECCIÓN DERECHA: TARJETA DE INFORMACIÓN
+      // ==========================================
+      const cardX = 1100;
+      const cardY = 100;
+      const cardW = 720;
+      const cardH = 880;
+      const centerX = cardX + (cardW / 2); // 1460
+
+      // Panel translúcido de la tarjeta
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.roundRect(cardX, cardY, cardW, cardH, 40);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Título
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 45px "Arial", sans-serif';
+      ctx.fillText('Academia AIVA - Certificado', centerX, 200);
+
+      // Nombre del Jugador CON su ficha actual en su propio color
+      ctx.font = 'bold 90px "Arial", sans-serif';
+      const gap = 20;
+      const anchoIcono = ctx.measureText(iconoX).width;
+      const anchoNombre = ctx.measureText(jugador.nombre).width;
+      const anchoTotal = anchoIcono + gap + anchoNombre;
+      const startX = centerX - (anchoTotal / 2);
+
+      ctx.textAlign = 'left';
+      // Dibujar la ficha en color Rojo
+      ctx.fillStyle = '#FF4742'; 
+      ctx.fillText(iconoX, startX, 310);
+      // Dibujar el nombre en color Azul
+      ctx.fillStyle = '#93c5fd'; 
+      ctx.fillText(jugador.nombre, startX + anchoIcono + gap, 310);
+      
+      ctx.textAlign = 'center'; // Restaurar alineación centrada
+
+      // Estadísticas
+      ctx.fillStyle = '#e2e8f0'; // slate-200
+      ctx.font = '35px "Arial", sans-serif';
+      ctx.fillText(`Nivel: ${jugador.nivel}  |  Puntos: ${jugador.puntos}  |  Victorias: ${jugador.victorias}`, centerX, 410);
+
+      // Línea separadora
+      ctx.beginPath();
+      ctx.moveTo(cardX + 80, 480);
+      ctx.lineTo(cardX + cardW - 80, 480);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.stroke();
+
+      // Lista de Logros
+      ctx.fillStyle = '#fde047'; // yellow-300
+      ctx.font = 'bold 45px "Arial", sans-serif';
+      ctx.fillText('Logros Desbloqueados:', centerX, 560);
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '35px "Arial", sans-serif';
+      let yLogro = 650;
+      jugador.logros.forEach((logro, index) => {
+        if (index < 6) { // Mostramos hasta 6 logros
+          ctx.fillText(`★ ${logro}`, centerX, yLogro);
+          yLogro += 55;
+        }
+      });
+      
+      if (jugador.logros.length > 6) {
+         ctx.fillText(`... y ${jugador.logros.length - 6} más.`, centerX, yLogro);
+      }
+
+      // ==========================================
+      // SECCIÓN IZQUIERDA: ESTADO DEL TABLERO
+      // ==========================================
+      // Subtítulo con la ficha del oponente en color verde
+      ctx.font = 'bold 50px "Arial", sans-serif';
+      const textoBase = 'Última Partida (vs ';
+      const anchoBase = ctx.measureText(textoBase).width;
+      const anchoOponente = ctx.measureText(iconoO).width;
+      const anchoParentesis = ctx.measureText(')').width;
+      const totalSubWidth = anchoBase + anchoOponente + anchoParentesis;
+      const startSubX = 540 - (totalSubWidth / 2);
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillText(textoBase, startSubX, 140);
+      
+      ctx.fillStyle = '#2EE59D'; // Color Verde para la IA
+      ctx.fillText(iconoO, startSubX + anchoBase, 140);
+      
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillText(')', startSubX + anchoBase + anchoOponente, 140);
+      
+      ctx.textAlign = 'center'; // Restaurar alineación centrada
+
+      const boardX = 150;
+      const boardY = 200;
+      const cellSize = 260;
+      const boardSize = cellSize * 3; // 780x780
+
+      // Fondo del tablero
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+      ctx.roundRect(boardX, boardY, boardSize, boardSize, 30);
+      ctx.fill();
+
+      // Líneas del tablero
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+      ctx.lineWidth = 12;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      // Verticales
+      ctx.moveTo(boardX + cellSize, boardY + 30);
+      ctx.lineTo(boardX + cellSize, boardY + boardSize - 30);
+      ctx.moveTo(boardX + cellSize * 2, boardY + 30);
+      ctx.lineTo(boardX + cellSize * 2, boardY + boardSize - 30);
+      // Horizontales
+      ctx.moveTo(boardX + 30, boardY + cellSize);
+      ctx.lineTo(boardX + boardSize - 30, boardY + cellSize);
+      ctx.moveTo(boardX + 30, boardY + cellSize * 2);
+      ctx.lineTo(boardX + boardSize - 30, boardY + cellSize * 2);
+      ctx.stroke();
+
+      // Dibujar las piezas actuales del array "estadoPartida.tablero"
+      for (let i = 0; i < 9; i++) {
+        if (estadoPartida.tablero[i] !== null) {
+          const row = Math.floor(i / 3);
+          const col = i % 3;
+          const cellCenterX = boardX + (col * cellSize) + (cellSize / 2);
+          const cellCenterY = boardY + (row * cellSize) + (cellSize / 2);
+
+          if (estadoPartida.tablero[i] === 'X') {
+            ctx.fillStyle = '#FF4742'; // Rojo
+            ctx.font = iconoX === '🚀' ? '130px Arial' : 'bold 150px Arial';
+            ctx.fillText(iconoX, cellCenterX, cellCenterY);
+          } else if (estadoPartida.tablero[i] === 'O') {
+            ctx.fillStyle = '#2EE59D'; // Verde
+            ctx.font = iconoO === '👾' ? '130px Arial' : 'bold 150px Arial';
+            ctx.fillText(iconoO, cellCenterX, cellCenterY);
+          }
+        }
+      }
+
+      // Descargar
+      const link = document.createElement('a');
+      link.download = `Academia_AIVA_${jugador.nombre.replace(/\s+/g, '_')}_Logros.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    // Helper para rectángulos con bordes redondeados en canvas (soporte antiguo)
+    CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+      if (w < 2 * r) r = w / 2;
+      if (h < 2 * r) r = h / 2;
+      this.beginPath();
+      this.moveTo(x+r, y);
+      this.arcTo(x+w, y,   x+w, y+h, r);
+      this.arcTo(x+w, y+h, x,   y+h, r);
+      this.arcTo(x,   y+h, x,   y,   r);
+      this.arcTo(x,   y,   x+w, y,   r);
+      this.closePath();
+      return this;
+    }
+  </script>
+</body>
+</html>
